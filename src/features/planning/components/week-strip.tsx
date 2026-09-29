@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Check } from "lucide-react";
 import { addDays, daysBetween, startOfWeek, toDateKey } from "@/lib/date";
 import { cn } from "@/lib/utils";
@@ -22,32 +23,34 @@ export function WeekStrip({ today, isCompleted }: WeekStripProps) {
         const completed = daysAgo >= 0 && isCompleted(toDateKey(day));
 
         return (
-          <li
-            key={toDateKey(day)}
-            aria-current={isToday ? "date" : undefined}
-            className={cn(
-              "flex flex-col items-center gap-1 rounded-xl py-2 text-[11px]",
-              isToday ? "bg-foreground text-background" : "text-muted-foreground",
-            )}
-          >
-            <span>{weekday.format(day)}</span>
-            <span
+          <li key={toDateKey(day)}>
+            <Link
+              href={`/tasks?day=${toDateKey(day)}`}
+              aria-current={isToday ? "date" : undefined}
               className={cn(
-                "text-base",
-                isToday ? "font-semibold" : daysAgo > 0 ? "text-muted-foreground" : "text-foreground",
+                "flex flex-col items-center gap-1 rounded-xl py-2 text-[11px] transition-colors",
+                isToday ? "bg-foreground text-background" : "text-muted-foreground active:bg-muted",
               )}
             >
-              {day.getDate()}
-            </span>
-            <span className="flex h-3.5 items-center">
-              {completed && (
-                <Check
-                  className={cn("size-3.5", isToday ? "text-background" : "text-emerald-400")}
-                  strokeWidth={3}
-                  aria-label="All tasks done"
-                />
-              )}
-            </span>
+              <span>{weekday.format(day)}</span>
+              <span
+                className={cn(
+                  "text-base",
+                  isToday ? "font-semibold" : daysAgo > 0 ? "text-muted-foreground" : "text-foreground",
+                )}
+              >
+                {day.getDate()}
+              </span>
+              <span className="flex h-3.5 items-center">
+                {completed && (
+                  <Check
+                    className={cn("size-3.5", isToday ? "text-background" : "text-emerald-400")}
+                    strokeWidth={3}
+                    aria-label="All tasks done"
+                  />
+                )}
+              </span>
+            </Link>
           </li>
         );
       })}

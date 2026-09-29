@@ -27,3 +27,20 @@ export function startOfWeek(date: Date): Date {
 export function daysBetween(a: Date, b: Date): number {
   return Math.round((fromDateKey(toDateKey(b)).getTime() - fromDateKey(toDateKey(a)).getTime()) / 86_400_000);
 }
+
+/** Sunday of the week containing `date`. */
+export function endOfWeek(date: Date): Date {
+  return addDays(startOfWeek(date), 6);
+}
+
+/** First day of the month, `offset` months away from `date`. */
+export function startOfMonth(date: Date, offset = 0): Date {
+  return new Date(date.getFullYear(), date.getMonth() + offset, 1);
+}
+
+/** Last day of the month containing `date`. */
+export function endOfMonth(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+}
+
+export const isDateKey = (value: string | null): value is string => !!value && /^\d{4}-\d{2}-\d{2}$/.test(value);

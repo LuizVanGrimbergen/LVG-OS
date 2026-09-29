@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 
 type AddTaskSheetProps = {
   open: boolean;
+  title: string;
   onClose: () => void;
   onAdd: (title: string) => void;
 };
 
-export function AddTaskSheet({ open, onClose, onAdd }: AddTaskSheetProps) {
+export function AddTaskSheet({ open, title: sheetTitle, onClose, onAdd }: AddTaskSheetProps) {
   const [title, setTitle] = useState("");
   const [error, setError] = useState("");
 
@@ -25,7 +26,7 @@ export function AddTaskSheet({ open, onClose, onAdd }: AddTaskSheetProps) {
   };
 
   return (
-    <BottomSheet open={open} title="New task" onClose={onClose} onSubmit={submit}>
+    <BottomSheet open={open} title={sheetTitle} onClose={onClose} onSubmit={submit}>
       <input
         autoFocus
         value={title}

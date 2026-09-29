@@ -1,19 +1,28 @@
 "use client";
 
+import { useEffect } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { ReflectionCard } from "@/features/reflection/components/reflection-card";
 import { SmokeFreeCard } from "@/features/streaks/components/smoke-free-card";
 import { useTodayKey } from "@/hooks/use-today";
-import { fromDateKey } from "@/lib/date";
+import { endOfWeek, fromDateKey, startOfWeek, toDateKey } from "@/lib/date";
 import { useTasks } from "../tasks-context";
 import { TasksCard } from "./tasks-card";
 import { WeekStrip } from "./week-strip";
 
 export function HomeView() {
   const todayKey = useTodayKey();
-  const { tasks, loaded, isDayCompleted } = useTasks();
+  const { tasksOn, isDayCompleted, ensureRange, isLoaded } = useTasks();
 
   const today = todayKey ? fromDateKey(todayKey) : null;
+  const weekFrom = today ? toDateKey(startOfWeek(today)) : null;
+  const weekTo = today ? toDateKey(endOfWeek(today)) : null;
+
+  useEffect(() => {
+    if (weekFrom && weekTo) ensureRange(weekFrom, weekTo);
+  }, [weekFrom, weekTo, ensureRange]);
+
+  const loaded = !!weekFrom && !!weekTo && isLoaded(weekFrom, weekTo);
 
   return (
     <div className="space-y-6">
@@ -24,7 +33,7 @@ export function HomeView() {
       <div className="space-y-2">
         <div className="grid grid-cols-2 gap-2">
           {today ? <SmokeFreeCard today={today} /> : <div className="rounded-2xl bg-card" />}
-          <TasksCard tasks={tasks} loaded={loaded} />
+          <TasksCard tasks={todayKey ? tasksOn(todayKey) : []} loaded={loaded} />
         </div>
         <ReflectionCard />
       </div>
