@@ -1,4 +1,4 @@
-import { House, ListChecks, NotebookPen, Plane, Target, User, type LucideIcon } from "lucide-react";
+import { House, ListChecks, NotebookPen, Plane, Settings, Sparkles, Target, type LucideIcon } from "lucide-react";
 
 export type AppPage = { href: string; label: string; icon: LucideIcon };
 
@@ -8,7 +8,8 @@ export const pages: AppPage[] = [
   { href: "/notes", label: "Notes", icon: NotebookPen },
   { href: "/goals", label: "Goals", icon: Target },
   { href: "/travel", label: "Travel", icon: Plane },
-  { href: "/about", label: "About me", icon: User },
+  { href: "/coach", label: "Coach", icon: Sparkles },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function findPage(pathname: string): AppPage | undefined {

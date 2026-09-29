@@ -40,11 +40,11 @@ npm run build && npm run start
 
 ```
 src/
-  app/            routes: / (Home), /tasks, /goals, /travel, /about
+  app/            routes: / (Home), /tasks, /goals, /travel, /coach, /settings
   components/
     ui/           shadcn/ui components
     layout/       menu button, page header, bottom sheet
-  features/       modules: planning, goals, travel, about
+  features/       modules: planning, goals, travel, notes, coach, settings, ...
   hooks/          shared React hooks
   lib/            helpers, incl. supabase/client.ts and supabase/server.ts
   types/          shared types
