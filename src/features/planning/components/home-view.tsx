@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { PageHeader } from "@/components/layout/page-header";
+import { QuickCapture } from "@/features/notes/components/quick-capture";
 import { ReflectionCard } from "@/features/reflection/components/reflection-card";
 import { SmokeFreeCard } from "@/features/streaks/components/smoke-free-card";
 import { useTodayKey } from "@/hooks/use-today";
@@ -35,6 +36,7 @@ export function HomeView() {
           {today ? <SmokeFreeCard today={today} /> : <div className="rounded-2xl bg-card" />}
           <TasksCard tasks={todayKey ? tasksOn(todayKey) : []} loaded={loaded} />
         </div>
+        <QuickCapture />
         <ReflectionCard />
       </div>
     </div>
