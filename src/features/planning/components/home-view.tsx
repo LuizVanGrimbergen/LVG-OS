@@ -3,6 +3,7 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { useTodayKey } from "@/hooks/use-today";
 import { fromDateKey } from "@/lib/date";
+import { ReflectionCard } from "@/features/reflection/components/reflection-card";
 import { SmokeFreeCard } from "@/features/streaks/components/smoke-free-card";
 import { mockNextUp } from "../mock-data";
 import { useTasks } from "../tasks-context";
@@ -28,6 +29,7 @@ export function HomeView() {
           {today ? <SmokeFreeCard today={today} /> : <div className="rounded-2xl bg-card" />}
           <TasksCard tasks={tasks} />
         </div>
+        <ReflectionCard />
         <NextUp item={mockNextUp} />
       </div>
     </div>
