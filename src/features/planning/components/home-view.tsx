@@ -9,7 +9,9 @@ import { ReflectionCard } from "@/features/reflection/components/reflection-card
 import { SmokeFreeCard } from "@/features/streaks/components/smoke-free-card";
 import { useTodayKey } from "@/hooks/use-today";
 import { endOfWeek, fromDateKey, startOfWeek, toDateKey } from "@/lib/date";
+import { HabitsCard } from "@/features/habits/components/habits-card";
 import { useTasks } from "../tasks-context";
+import { CarryOverCard } from "./carry-over-card";
 import { TasksCard } from "./tasks-card";
 import { WeekStrip } from "./week-strip";
 
@@ -43,10 +45,16 @@ export function HomeView() {
       )}
 
       <div className="space-y-2">
+        {todayKey && <CarryOverCard today={todayKey} />}
         <StaggerItem className="grid grid-cols-2 gap-2">
           {today ? <SmokeFreeCard today={today} /> : <div className="rounded-2xl bg-card" />}
           <TasksCard tasks={todayKey ? tasksOn(todayKey) : []} loaded={loaded} />
         </StaggerItem>
+        {todayKey && (
+          <StaggerItem>
+            <HabitsCard today={todayKey} />
+          </StaggerItem>
+        )}
         <StaggerItem className="space-y-2">
           <QuickCapture />
           <ReflectionCard />

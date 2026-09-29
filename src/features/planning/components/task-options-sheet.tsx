@@ -9,12 +9,19 @@ type TaskOptionsSheetProps = {
   today: string;
   onMove: (id: string, day: string) => void;
   onDelete: (id: string) => void;
+  onStopRepeating: (ruleId: string) => void;
   onClose: () => void;
 };
 
-/** Opened by holding a task: move it to today, or delete it. */
-export function TaskOptionsSheet({ task, today, onMove, onDelete, onClose }: TaskOptionsSheetProps) {
-  const canMove = task !== null && task.day !== today;
+const big = "h-12 w-full rounded-xl text-base";
+
+/**
+ * Opened by holding a task. One-off tasks: move to today or delete.
+ * Recurring tasks: skip this day or stop repeating.
+ */
+export function TaskOptionsSheet({ task, today, onMove, onDelete, onStopRepeating, onClose }: TaskOptionsSheetProps) {
+  const recurringId = task?.recurring_id ?? null;
+  const canMove = task !== null && !recurringId && task.day !== today;
 
   return (
     <BottomSheet
@@ -37,15 +44,29 @@ export function TaskOptionsSheet({ task, today, onMove, onDelete, onClose }: Tas
               onMove(task.id, today);
               onClose();
             }}
-            className="h-12 w-full rounded-xl text-base"
+            className={big}
           >
             Move to today
           </Button>
         )}
-        <Button type="submit" variant="destructive" size="lg" className="h-12 w-full rounded-xl text-base">
-          Delete task
+        {recurringId && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            onClick={() => {
+              onStopRepeating(recurringId);
+              onClose();
+            }}
+            className={big}
+          >
+            Stop repeating
+          </Button>
+        )}
+        <Button type="submit" variant="destructive" size="lg" className={big}>
+          {recurringId ? "Skip this day" : "Delete task"}
         </Button>
-        <Button type="button" variant="ghost" size="lg" onClick={onClose} className="h-12 w-full rounded-xl text-base">
+        <Button type="button" variant="ghost" size="lg" onClick={onClose} className={big}>
           Cancel
         </Button>
       </div>

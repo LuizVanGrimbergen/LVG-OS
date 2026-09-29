@@ -38,7 +38,8 @@ function writeCollapsed(collapsed: boolean) {
 export function TasksView() {
   const todayKey = useTodayKey();
   const dayParam = useSearchParams().get("day");
-  const { tasksOn, isDayCompleted, ensureRange, isLoaded, toggle, add, move, remove } = useTasks();
+  const { tasksOn, isDayCompleted, ensureRange, isLoaded, toggle, add, addRecurring, stopRepeating, move, remove } =
+    useTasks();
 
   // Selected day: from the link (?day=…) or today. Shown month: follows the selection until you page.
   const [pickedDay, setPickedDay] = useState<string | null>(isDateKey(dayParam) ? dayParam : null);
@@ -106,13 +107,16 @@ export function TasksView() {
         today={todayKey}
         onMove={move}
         onDelete={remove}
+        onStopRepeating={stopRepeating}
         onClose={() => setOptions(null)}
       />
       <AddTaskSheet
+        key={selected}
         open={adding}
+        day={selected}
         title={selected === todayKey ? "New task" : `New task · ${label}`}
         onClose={() => setAdding(false)}
-        onAdd={(title) => add(title, selected)}
+        onAdd={(title, repeat) => (repeat ? addRecurring(title, repeat, selected) : add(title, selected))}
       />
     </div>
   );
