@@ -46,7 +46,8 @@ export function AppMenu() {
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            // Fade out a bit later, so you can see the wheel spin away.
+            exit={{ opacity: 0, transition: { duration: 0.35, delay: 0.15 } }}
             transition={{ duration: 0.25 }}
             onClick={() => setOpen(false)}
           >

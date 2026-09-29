@@ -2,13 +2,15 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react";
+import { animate, motion, useMotionValue, usePresence, useReducedMotion, useTransform } from "motion/react";
 import { cn } from "@/lib/utils";
 import { pages } from "./pages";
 
 const RADIUS = 120;
 const STEP = 360 / pages.length;
 const SPIN_FROM = -300;
+/** How far it keeps turning while it closes. */
+const SPIN_AWAY = 300;
 const DRAG_THRESHOLD_PX = 6;
 const wheelSpring = { type: "spring", stiffness: 110, damping: 16 } as const;
 
@@ -29,12 +31,26 @@ export function MenuWheel({ currentHref, onNavigate }: MenuWheelProps) {
   const wheelRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ lastAngle: number; x: number; y: number; moved: boolean } | null>(null);
   const suppressClick = useRef(false);
+  const [isPresent, safeToRemove] = usePresence();
 
+  // Opening: spin into place. Closing: keep turning the same way, then let the menu unmount.
   useEffect(() => {
-    if (reduce) return;
-    const controls = animate(rotate, 0, wheelSpring);
+    if (isPresent) {
+      if (reduce) return;
+      const controls = animate(rotate, 0, wheelSpring);
+      return () => controls.stop();
+    }
+    if (reduce) {
+      safeToRemove();
+      return;
+    }
+    const controls = animate(rotate, rotate.get() + SPIN_AWAY, {
+      duration: 0.45,
+      ease: [0.5, 0, 0.75, 0],
+      onComplete: safeToRemove,
+    });
     return () => controls.stop();
-  }, [rotate, reduce]);
+  }, [isPresent, safeToRemove, rotate, reduce]);
 
   /** Angle of the pointer around the wheel's center, in degrees. */
   const angleOf = (e: React.PointerEvent) => {
@@ -99,7 +115,7 @@ export function MenuWheel({ currentHref, onNavigate }: MenuWheelProps) {
         style={{ rotate }}
         initial={{ scale: 0.4, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.5, opacity: 0 }}
+        exit={{ scale: 0.3, opacity: 0, transition: { duration: 0.45, ease: [0.5, 0, 0.75, 0] } }}
         transition={{ type: "spring", stiffness: 220, damping: 22 }}
       >
         {/* Faint orbit the icons sit on. */}
