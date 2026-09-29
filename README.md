@@ -31,9 +31,9 @@ npm run build && npm run start
 ## Supabase setup (once)
 
 1. Run [`supabase/schema.sql`](supabase/schema.sql) in the Supabase SQL Editor.
-2. Authentication → Emails → **Magic Link** template: include `{{ .Token }}` so the email contains a 6-digit code.
+2. Authentication → Users → Add user: create your account with a password (tick Auto Confirm). Optional: include `{{ .Token }}` in the Magic Link email template for the email-code fallback.
 3. Authentication → URL Configuration → Site URL: `https://lvg-os.vercel.app`.
-4. After your first sign-in: turn off **Allow new users to sign up**.
+4. Turn off **Allow new users to sign up**.
 5. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local` and in Vercel.
 
 ## Structure
