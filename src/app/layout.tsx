@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SerwistProvider } from "@serwist/turbopack/react";
-import { TabBar } from "@/components/layout/tab-bar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -42,10 +41,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           swUrl="/serwist/sw.js"
           disable={process.env.NODE_ENV === "development"}
         >
-          <main className="mx-auto max-w-md px-4 pb-[calc(4rem+env(safe-area-inset-bottom)+1.5rem)]">
+          <main className="mx-auto max-w-md px-4 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
             {children}
           </main>
-          <TabBar />
         </SerwistProvider>
       </body>
     </html>

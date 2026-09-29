@@ -35,7 +35,7 @@ src/
   app/            routes: / (Today), /goals, /travel, /about
   components/
     ui/           shadcn/ui components
-    layout/       tab bar, page header, bottom sheet
+    layout/       menu, page header, bottom sheet
   features/       modules: planning, goals, travel, about
   hooks/          shared React hooks
   lib/            helpers, incl. supabase/client.ts and supabase/server.ts
