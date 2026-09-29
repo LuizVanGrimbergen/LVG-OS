@@ -1,5 +1,5 @@
-import { PageHeader } from "@/components/layout/page-header";
+import { GoalsView } from "@/features/goals/components/goals-view";
 
 export default function GoalsPage() {
-  return <PageHeader title="Doelen" />;
+  return <GoalsView />;
 }
