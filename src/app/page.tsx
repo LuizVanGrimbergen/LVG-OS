@@ -1,5 +1,5 @@
-import { PageHeader } from "@/components/layout/page-header";
+import { TodayView } from "@/features/planning/components/today-view";
 
 export default function HomePage() {
-  return <PageHeader title="Vandaag" />;
+  return <TodayView />;
 }
