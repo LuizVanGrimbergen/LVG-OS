@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SerwistProvider } from "@serwist/turbopack/react";
+import { AppMenu } from "@/components/layout/app-menu";
+import { TasksProvider } from "@/features/planning/tasks-context";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -41,9 +43,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           swUrl="/serwist/sw.js"
           disable={process.env.NODE_ENV === "development"}
         >
-          <main className="mx-auto max-w-md px-4 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
-            {children}
-          </main>
+          <TasksProvider>
+            <main className="mx-auto max-w-md px-4 pb-[calc(env(safe-area-inset-bottom)+5rem)]">
+              {children}
+            </main>
+          </TasksProvider>
+          <AppMenu />
         </SerwistProvider>
       </body>
     </html>

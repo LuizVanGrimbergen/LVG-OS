@@ -1,5 +1,5 @@
-import { TodayView } from "@/features/planning/components/today-view";
+import { HomeView } from "@/features/planning/components/home-view";
 
 export default function HomePage() {
-  return <TodayView />;
+  return <HomeView />;
 }

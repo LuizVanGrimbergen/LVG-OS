@@ -6,16 +6,17 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { findPage, pages } from "./pages";
 
-const pages = [
-  { href: "/", label: "Today" },
-  { href: "/goals", label: "Goals" },
-  { href: "/travel", label: "Travel" },
-  { href: "/about", label: "About me" },
-] as const;
+const RING_RADIUS = 120;
 
+/**
+ * Round button at the bottom of the screen. Shows the current page's icon
+ * and opens the navigation: the pages in a ring in the middle of the screen.
+ */
 export function AppMenu() {
   const pathname = usePathname();
+  const current = findPage(pathname);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -29,61 +30,58 @@ export function AppMenu() {
     };
   }, [open]);
 
+  const Icon = open ? X : (current?.icon ?? Menu);
+
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Open menu"
-        aria-expanded={open}
-        className="flex size-10 items-center justify-center rounded-full text-foreground transition-colors active:bg-muted"
-      >
-        <Menu className="size-6" />
-      </button>
-
       <AnimatePresence>
         {open && (
           <motion.nav
             aria-label="Main"
-            className="fixed inset-0 z-80 bg-background"
+            className="fixed inset-0 z-80 flex items-center justify-center bg-background/95 backdrop-blur-lg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
+            onClick={() => setOpen(false)}
           >
-            <div className="mx-auto max-w-md px-4 pt-[env(safe-area-inset-top)]">
-              <div className="flex items-center justify-between pt-6">
-                <span className="text-sm text-muted-foreground">LVG OS</span>
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  aria-label="Close menu"
-                  className="flex size-10 items-center justify-center rounded-full text-foreground transition-colors active:bg-muted"
-                >
-                  <X className="size-6" />
-                </button>
-              </div>
-
-              <ul className="mt-12">
-                {pages.map(({ href, label }, i) => {
-                  const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+            <div className="relative size-80" onClick={(e) => e.stopPropagation()}>
+              <ul>
+                {pages.map(({ href, label, icon: PageIcon }, i) => {
+                  const active = current?.href === href;
+                  // Evenly spaced around the center, starting at the top.
+                  const angle = -Math.PI / 2 + (i * 2 * Math.PI) / pages.length;
+                  const x = Math.cos(angle) * RING_RADIUS;
+                  const y = Math.sin(angle) * RING_RADIUS;
                   return (
                     <motion.li
                       key={href}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.05 + i * 0.05, type: "spring", stiffness: 400, damping: 35 }}
+                      className="absolute top-1/2 left-1/2 -mt-7 -ml-7"
+                      initial={{ x: 0, y: 0, scale: 0.3, opacity: 0 }}
+                      animate={{ x, y, scale: 1, opacity: 1 }}
+                      exit={{ x: 0, y: 0, scale: 0.3, opacity: 0 }}
+                      transition={{ delay: i * 0.03, type: "spring", stiffness: 380, damping: 26 }}
                     >
                       <Link
                         href={href}
                         onClick={() => setOpen(false)}
+                        aria-label={label}
                         aria-current={active ? "page" : undefined}
-                        className={cn(
-                          "block py-3 text-4xl font-semibold tracking-tight transition-colors",
-                          active ? "text-foreground" : "text-muted-foreground active:text-foreground",
-                        )}
+                        className="flex flex-col items-center gap-1.5"
                       >
-                        {label}
+                        <span
+                          className={cn(
+                            "flex size-14 items-center justify-center rounded-full border transition-colors",
+                            active
+                              ? "border-foreground bg-foreground text-background"
+                              : "border-border bg-card text-foreground active:bg-muted",
+                          )}
+                        >
+                          <PageIcon className="size-6" />
+                        </span>
+                        <span className="absolute top-full mt-1.5 text-[11px] whitespace-nowrap text-muted-foreground">
+                          {label}
+                        </span>
                       </Link>
                     </motion.li>
                   );
@@ -93,6 +91,28 @@ export function AppMenu() {
           </motion.nav>
         )}
       </AnimatePresence>
+
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-90 flex justify-center pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-label={open ? "Close menu" : `Open menu (current page: ${current?.label ?? "unknown"})`}
+          aria-expanded={open}
+          className="pointer-events-auto flex size-12 items-center justify-center rounded-full border border-border bg-background/80 text-foreground backdrop-blur-lg transition-transform active:scale-95"
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={open ? "close" : (current?.href ?? "menu")}
+              initial={{ opacity: 0, scale: 0.6, rotate: -45 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              exit={{ opacity: 0, scale: 0.6 }}
+              transition={{ duration: 0.15 }}
+            >
+              <Icon className="size-5" />
+            </motion.span>
+          </AnimatePresence>
+        </button>
+      </div>
     </>
   );
 }
