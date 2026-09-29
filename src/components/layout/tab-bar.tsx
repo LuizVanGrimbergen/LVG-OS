@@ -7,10 +7,10 @@ import { CalendarCheck, Plane, Target, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
-  { href: "/", label: "Vandaag", icon: CalendarCheck },
-  { href: "/doelen", label: "Doelen", icon: Target },
-  { href: "/reizen", label: "Reizen", icon: Plane },
-  { href: "/over-mij", label: "Over mij", icon: User },
+  { href: "/", label: "Today", icon: CalendarCheck },
+  { href: "/goals", label: "Goals", icon: Target },
+  { href: "/travel", label: "Travel", icon: Plane },
+  { href: "/about", label: "About me", icon: User },
 ] as const;
 
 export function TabBar() {

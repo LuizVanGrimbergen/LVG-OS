@@ -1,41 +1,43 @@
 # LVG OS
 
-Een persoonlijke, gsm-first PWA om mijn planning, doelen, reizen en persoonlijke groei bij te houden. Alleen voor eigen gebruik.
+A personal, mobile-first PWA to keep track of my planning, goals, travel and personal growth. For my own use only.
 
 ## Stack
 
-- [Next.js](https://nextjs.org) 16 (App Router, TypeScript, `src/`-map)
+- [Next.js](https://nextjs.org) 16 (App Router, TypeScript, `src/` directory)
 - [Tailwind CSS](https://tailwindcss.com) v4 + [shadcn/ui](https://ui.shadcn.com)
-- [Motion](https://motion.dev) voor animaties
-- [lucide-react](https://lucide.dev) voor iconen
+- [Motion](https://motion.dev) for animations
+- [lucide-react](https://lucide.dev) for icons
 - [Supabase](https://supabase.com) (`@supabase/supabase-js` + `@supabase/ssr`)
-- [Serwist](https://serwist.pages.dev) voor de service worker (PWA)
+- [Serwist](https://serwist.pages.dev) for the service worker (PWA)
+- [d3-geo](https://d3js.org/d3-geo) + [world-atlas](https://github.com/topojson/world-atlas) for the travel map (rendered on the server)
 
-## Lokaal draaien
+## Running locally
 
 ```bash
 npm install
-cp .env.local.example .env.local   # vul je Supabase-URL en anon key in
+cp .env.local.example .env.local   # fill in your Supabase URL and anon key
 npm run dev
 ```
 
-Open daarna [http://localhost:3000](http://localhost:3000).
+Then open [http://localhost:3000](http://localhost:3000).
 
-De service worker staat uit tijdens `npm run dev`. Om de PWA te testen:
+The service worker is disabled during `npm run dev`. To test the PWA:
 
 ```bash
 npm run build && npm run start
 ```
 
-## Structuur
+## Structure
 
 ```
 src/
-  app/            routes: / (Vandaag), /doelen, /reizen, /over-mij
+  app/            routes: / (Today), /goals, /travel, /about
   components/
-    ui/           shadcn/ui-componenten
-    layout/       tabbar en paginaheaders
+    ui/           shadcn/ui components
+    layout/       tab bar, page header, bottom sheet
   features/       modules: planning, goals, travel, about
-  lib/            helpers, o.a. supabase/client.ts en supabase/server.ts
-  types/          gedeelde types
+  hooks/          shared React hooks
+  lib/            helpers, incl. supabase/client.ts and supabase/server.ts
+  types/          shared types
 ```

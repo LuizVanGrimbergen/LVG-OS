@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "LVG OS",
-  description: "Persoonlijke planning, doelen, reizen en groei.",
+  description: "Personal planning, goals, travel and growth.",
   appleWebApp: {
     capable: true,
     title: "LVG OS",
@@ -34,7 +34,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="nl"
+      lang="en"
       className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full">

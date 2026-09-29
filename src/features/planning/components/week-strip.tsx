@@ -3,7 +3,7 @@ import { addDays, daysBetween, startOfWeek, toDateKey } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import { wasDayCompleted } from "../mock-data";
 
-const weekday = new Intl.DateTimeFormat("nl-BE", { weekday: "short" });
+const weekday = new Intl.DateTimeFormat("en-GB", { weekday: "short" });
 
 type WeekStripProps = {
   today: Date;
@@ -30,7 +30,7 @@ export function WeekStrip({ today, todayCompleted }: WeekStripProps) {
               isToday ? "bg-foreground text-background" : "text-muted-foreground",
             )}
           >
-            <span>{weekday.format(day).replace(".", "")}</span>
+            <span>{weekday.format(day)}</span>
             <span
               className={cn(
                 "text-base",
@@ -44,7 +44,7 @@ export function WeekStrip({ today, todayCompleted }: WeekStripProps) {
                 <Check
                   className={cn("size-3.5", isToday ? "text-background" : "text-emerald-400")}
                   strokeWidth={3}
-                  aria-label="Alle taken gedaan"
+                  aria-label="All tasks done"
                 />
               )}
             </span>

@@ -5,7 +5,7 @@ export function NextUp({ item }: { item: AgendaItem }) {
   return (
     <p className="flex items-center gap-2 text-sm text-muted-foreground">
       <Clock className="size-4" />
-      Volgende: {item.title} om {item.time}
+      Next: {item.title} at {item.time}
     </p>
   );
 }

@@ -20,13 +20,13 @@ export function GoalRow({ goal, onStep }: GoalRowProps) {
       type="button"
       onClick={() => onStep(goal.id)}
       whileTap={{ scale: 0.98 }}
-      aria-label={`${goal.title}, ${value}. Tik voor ${step}`}
+      aria-label={`${goal.title}, ${value}. Tap for ${step}`}
       className="block w-full py-4 text-left"
     >
       <div className="flex items-baseline justify-between gap-3 text-[15px]">
         <span className={cn(done && "text-muted-foreground")}>
           {goal.title}
-          {goal.period === "week" && <span className="ml-2 text-xs text-muted-foreground">deze week</span>}
+          {goal.period === "week" && <span className="ml-2 text-xs text-muted-foreground">this week</span>}
         </span>
         <span className="shrink-0 text-sm tabular-nums text-muted-foreground">{value}</span>
       </div>

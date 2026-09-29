@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Briefcase, Dumbbell, Plus } from "lucide-react";
+import { Briefcase, Dumbbell } from "lucide-react";
+import { AddButton } from "@/components/layout/add-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { categories, mockGoals } from "../mock-data";
 import type { Goal } from "../types";
 import { AddGoalSheet } from "./add-goal-sheet";
 import { GoalRow } from "./goal-row";
 
-const categoryIcons = { sport: Dumbbell, werk: Briefcase };
+const categoryIcons = { sport: Dumbbell, work: Briefcase };
 
 export function GoalsView() {
   const [goals, setGoals] = useState(mockGoals);
@@ -26,17 +27,8 @@ export function GoalsView() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Doelen"
-        action={
-          <button
-            type="button"
-            onClick={() => setAdding(true)}
-            aria-label="Nieuw doel"
-            className="flex size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors active:bg-muted"
-          >
-            <Plus className="size-5" />
-          </button>
-        }
+        title="Goals"
+        action={<AddButton label="New goal" onClick={() => setAdding(true)} />}
       />
 
       {categories.map(({ id, label }) => {
