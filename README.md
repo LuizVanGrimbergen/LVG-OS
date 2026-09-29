@@ -16,7 +16,7 @@ A personal, mobile-first PWA to keep track of my planning, goals, travel and per
 
 ```bash
 npm install
-cp .env.local.example .env.local   # fill in your Supabase URL and anon key
+cp .env.local.example .env.local   # fill in your Supabase URL and publishable key
 npm run dev
 ```
 
