@@ -15,3 +15,8 @@ export function nextMilestoneText(days: number): string | null {
   const left = next.days - days;
   return left === 1 ? `${next.label} tomorrow` : `${left} days to ${next.label}`;
 }
+
+/** The milestone reached exactly on this day, e.g. "1 week" on day 7. */
+export function milestoneOn(days: number): string | null {
+  return milestones.find((m) => m.days === days)?.label ?? null;
+}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Briefcase, Dumbbell } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
 import { PageHeader } from "@/components/layout/page-header";
+import { celebrate } from "@/lib/celebrate";
 import { categories, mockGoals } from "../mock-data";
 import type { Goal } from "../types";
 import { AddGoalSheet } from "./add-goal-sheet";
@@ -17,12 +18,13 @@ export function GoalsView() {
   const [adding, setAdding] = useState(false);
   const [selected, setSelected] = useState<Goal | null>(null);
 
-  const step = (id: string) =>
-    setGoals((prev) =>
-      prev.map((g) =>
-        g.id === id ? { ...g, current: Math.min(g.current + (g.kind === "percent" ? 10 : 1), g.target) } : g,
-      ),
-    );
+  const step = (id: string) => {
+    const goal = goals.find((g) => g.id === id);
+    if (!goal || goal.current >= goal.target) return;
+    const current = Math.min(goal.current + (goal.kind === "percent" ? 10 : 1), goal.target);
+    setGoals((prev) => prev.map((g) => (g.id === id ? { ...g, current } : g)));
+    if (current === goal.target) void celebrate();
+  };
 
   const remove = (id: string) => setGoals((prev) => prev.filter((g) => g.id !== id));
 
