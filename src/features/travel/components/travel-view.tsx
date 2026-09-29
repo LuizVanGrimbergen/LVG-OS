@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Globe, MapPin, Pencil } from "lucide-react";
+import { Globe, Map as MapIcon, MapPin, Pencil } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
 import { DeleteSheet } from "@/components/layout/delete-sheet";
 import { PageHeader } from "@/components/layout/page-header";
 import { createClient } from "@/lib/supabase/client";
 import type { Place, WorldMap } from "../types";
+import { useMapView } from "../use-map-view";
 import { AddPlaceSheet } from "./add-place-sheet";
 import { MarkVisitedSheet } from "./mark-visited-sheet";
 import { PlaceList } from "./place-list";
+import { VisitedGlobe } from "./visited-globe";
 import { VisitedMap } from "./visited-map";
 
 export function TravelView({ map }: { map: WorldMap }) {
@@ -19,12 +21,14 @@ export function TravelView({ map }: { map: WorldMap }) {
   const [adding, setAdding] = useState(false);
   const [marking, setMarking] = useState(false);
   const [selected, setSelected] = useState<Place | null>(null);
+  const [view, setView] = useMapView();
 
   // A country counts as visited when ticked off by hand or when a place in it is listed.
   const fromPlaces = new Set(places.map((p) => p.countryId));
   const visited = new Set([...markedVisited, ...fromPlaces]);
 
   const namesById = new Map(map.countries.map((c) => [c.id, c.name]));
+  const selectableIds = new Set(map.countries.filter((c) => c.selectable).map((c) => c.id));
   const countryName = (id: string) => namesById.get(id) ?? "";
   const sortedPlaces = [...places].sort(
     (a, b) =>
@@ -105,17 +109,32 @@ export function TravelView({ map }: { map: WorldMap }) {
             <Globe className="size-3.5" />
             Been to · {visited.size} {visited.size === 1 ? "country" : "countries"}
           </h2>
-          <button
-            type="button"
-            onClick={() => setMarking(true)}
-            className="-my-2 flex items-center gap-1 py-2 text-xs text-foreground"
-          >
-            <Pencil className="size-3.5" />
-            Edit
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => setView(view === "globe" ? "map" : "globe")}
+              aria-label={view === "globe" ? "Show flat map" : "Show globe"}
+              className="-my-2 flex items-center gap-1 py-2 text-xs text-foreground"
+            >
+              {view === "globe" ? <MapIcon className="size-3.5" /> : <Globe className="size-3.5" />}
+              {view === "globe" ? "Map" : "Globe"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setMarking(true)}
+              className="-my-2 flex items-center gap-1 py-2 text-xs text-foreground"
+            >
+              <Pencil className="size-3.5" />
+              Edit
+            </button>
+          </div>
         </div>
         <div className="mt-3">
-          <VisitedMap map={map} visited={visited} onToggle={toggleCountry} />
+          {view === "globe" ? (
+            <VisitedGlobe visited={visited} selectable={selectableIds} onToggle={toggleCountry} />
+          ) : (
+            <VisitedMap map={map} visited={visited} onToggle={toggleCountry} />
+          )}
         </div>
       </section>
 
