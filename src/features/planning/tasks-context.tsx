@@ -14,6 +14,7 @@ type TasksContextValue = {
   isDayCompleted: (dayKey: string) => boolean;
   toggle: (id: string) => void;
   add: (title: string) => void;
+  remove: (id: string) => void;
 };
 
 const TasksContext = createContext<TasksContextValue | null>(null);
@@ -79,8 +80,19 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const remove = async (id: string) => {
+    const before = weekTasks;
+    setWeekTasks((prev) => prev.filter((t) => t.id !== id));
+
+    const { error } = await createClient().from("tasks").delete().eq("id", id);
+    if (error) {
+      console.error("Deleting task failed", error);
+      setWeekTasks(before);
+    }
+  };
+
   return (
-    <TasksContext value={{ tasks, loaded, isDayCompleted, toggle, add }}>{children}</TasksContext>
+    <TasksContext value={{ tasks, loaded, isDayCompleted, toggle, add, remove }}>{children}</TasksContext>
   );
 }
 

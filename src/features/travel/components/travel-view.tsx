@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
+import { DeleteSheet } from "@/components/layout/delete-sheet";
 import { PageHeader } from "@/components/layout/page-header";
 import { createClient } from "@/lib/supabase/client";
 import type { Place, WorldMap } from "../types";
@@ -17,6 +18,7 @@ export function TravelView({ map }: { map: WorldMap }) {
   const [loaded, setLoaded] = useState(false);
   const [adding, setAdding] = useState(false);
   const [marking, setMarking] = useState(false);
+  const [selected, setSelected] = useState<Place | null>(null);
 
   // A country counts as visited when ticked off by hand or when a place in it is listed.
   const fromPlaces = new Set(places.map((p) => p.countryId));
@@ -69,6 +71,17 @@ export function TravelView({ map }: { map: WorldMap }) {
     }
   };
 
+  const removePlace = async (id: string) => {
+    const before = places;
+    setPlaces((prev) => prev.filter((p) => p.id !== id));
+
+    const { error } = await createClient().from("places").delete().eq("id", id);
+    if (error) {
+      console.error("Deleting place failed", error);
+      setPlaces(before);
+    }
+  };
+
   const addPlace = async (fields: Omit<Place, "id">) => {
     const place: Place = { ...fields, id: crypto.randomUUID() };
     setPlaces((prev) => [...prev, place]);
@@ -107,7 +120,7 @@ export function TravelView({ map }: { map: WorldMap }) {
 
       <section>
         <h2 className="text-xs text-muted-foreground">Places</h2>
-        {loaded && <PlaceList places={sortedPlaces} countryName={countryName} />}
+        {loaded && <PlaceList places={sortedPlaces} countryName={countryName} onOptions={setSelected} />}
       </section>
 
       <MarkVisitedSheet
@@ -117,6 +130,12 @@ export function TravelView({ map }: { map: WorldMap }) {
         fromPlaces={fromPlaces}
         onToggle={toggleCountry}
         onClose={() => setMarking(false)}
+      />
+      <DeleteSheet
+        item={selected && { id: selected.id, title: selected.name }}
+        label="Delete place"
+        onDelete={removePlace}
+        onClose={() => setSelected(null)}
       />
       <AddPlaceSheet open={adding} countries={map.countries} onClose={() => setAdding(false)} onAdd={addPlace} />
     </div>

@@ -2,44 +2,57 @@
 
 import { motion } from "motion/react";
 import { Check } from "lucide-react";
+import { useLongPress } from "@/hooks/use-long-press";
 import { cn } from "@/lib/utils";
 import type { Task } from "../types";
 
 type FocusListProps = {
   tasks: Task[];
   onToggle: (id: string) => void;
+  /** Hold a task to open its options. */
+  onOptions: (task: Task) => void;
 };
 
-export function FocusList({ tasks, onToggle }: FocusListProps) {
+export function FocusList({ tasks, onToggle, onOptions }: FocusListProps) {
   return (
     <ul className="divide-y divide-border">
       {tasks.map((task) => (
         <li key={task.id}>
-          <button
-            type="button"
-            onClick={() => onToggle(task.id)}
-            aria-pressed={task.done}
-            className="flex w-full items-center gap-3 py-4 text-left text-[15px]"
-          >
-            <motion.span
-              whileTap={{ scale: 0.85 }}
-              className={cn(
-                "flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors",
-                task.done ? "border-foreground bg-foreground text-background" : "border-foreground/40",
-              )}
-            >
-              {task.done && (
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                  <Check className="size-3" strokeWidth={3} />
-                </motion.span>
-              )}
-            </motion.span>
-            <span className={cn("transition-colors", task.done && "text-muted-foreground line-through")}>
-              {task.title}
-            </span>
-          </button>
+          <TaskRow task={task} onToggle={onToggle} onOptions={onOptions} />
         </li>
       ))}
     </ul>
+  );
+}
+
+function TaskRow({ task, onToggle, onOptions }: { task: Task } & Omit<FocusListProps, "tasks">) {
+  const press = useLongPress(
+    () => onOptions(task),
+    () => onToggle(task.id),
+  );
+
+  return (
+    <button
+      type="button"
+      {...press}
+      aria-pressed={task.done}
+      aria-label={`${task.title}. Tap to ${task.done ? "undo" : "complete"}, hold for options`}
+      className="flex w-full touch-manipulation items-center gap-3 py-4 text-left text-[15px] select-none [-webkit-touch-callout:none]"
+    >
+      <motion.span
+        whileTap={{ scale: 0.85 }}
+        className={cn(
+          "flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors",
+          task.done ? "border-foreground bg-foreground text-background" : "border-foreground/40",
+        )}
+      >
+        {task.done && (
+          <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}>
+            <Check className="size-3" strokeWidth={3} />
+          </motion.span>
+        )}
+      </motion.span>
+      <span className={cn("transition-colors", task.done && "text-muted-foreground line-through")}>{task.title}</span>
+    </button>
   );
 }

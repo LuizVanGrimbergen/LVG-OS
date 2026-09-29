@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import { Briefcase, Dumbbell } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
+import { DeleteSheet } from "@/components/layout/delete-sheet";
 import { PageHeader } from "@/components/layout/page-header";
 import { celebrate } from "@/lib/celebrate";
 import { createClient } from "@/lib/supabase/client";
 import { categories } from "../categories";
 import type { Goal } from "../types";
 import { AddGoalSheet } from "./add-goal-sheet";
-import { GoalOptionsSheet } from "./goal-options-sheet";
 import { GoalRow } from "./goal-row";
 
 const categoryIcons = { sport: Dumbbell, work: Briefcase };
@@ -101,7 +101,7 @@ export function GoalsView() {
         );
       })}
 
-      <GoalOptionsSheet goal={selected} onClose={() => setSelected(null)} onDelete={remove} />
+      <DeleteSheet item={selected} label="Delete goal" onDelete={remove} onClose={() => setSelected(null)} />
       <AddGoalSheet open={adding} onClose={() => setAdding(false)} onAdd={add} />
     </div>
   );
