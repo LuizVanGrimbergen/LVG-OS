@@ -4,7 +4,7 @@ import { useState } from "react";
 import { BottomSheet } from "@/components/layout/bottom-sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { categories } from "../mock-data";
+import { categories } from "../categories";
 import type { Goal, GoalCategory } from "../types";
 
 type AddGoalSheetProps = {

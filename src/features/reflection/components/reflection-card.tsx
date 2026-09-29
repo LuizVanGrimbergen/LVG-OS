@@ -10,8 +10,8 @@ import { PromptCard } from "./prompt-card";
  */
 export function ReflectionCard() {
   const dayPart = useDayPart();
-  const { notes, save } = useReflection();
-  if (!dayPart) return null;
+  const { notes, loadedDay, save } = useReflection();
+  if (!dayPart || loadedDay !== dayPart.dateKey) return null;
 
   const { part, dateKey } = dayPart;
   const note = notes[dateKey] ?? {};

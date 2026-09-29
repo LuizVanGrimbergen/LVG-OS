@@ -38,17 +38,20 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims()
   const user = data?.claims
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    // the OAuth consent route sends unauthenticated visitors to the login page
-    // itself, so that it can preserve the authorization in the `next` parameter
-    request.nextUrl.pathname !== '/oauth/consent'
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  const isLoginPage = request.nextUrl.pathname.startsWith('/login')
+  const isAuthCallback = request.nextUrl.pathname.startsWith('/auth/')
+
+  // Not signed in: everything except the login page and sign-in link redirects there.
+  if (!user && !isLoginPage && !isAuthCallback) {
     const url = request.nextUrl.clone()
-    url.pathname = '/auth/login'
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
+
+  // Already signed in: skip the login page.
+  if (user && isLoginPage) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
     return NextResponse.redirect(url)
   }
 

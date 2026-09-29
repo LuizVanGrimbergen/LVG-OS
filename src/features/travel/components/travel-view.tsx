@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
 import { PageHeader } from "@/components/layout/page-header";
-import { mockPlaces, mockVisitedCountryIds } from "../mock-data";
+import { createClient } from "@/lib/supabase/client";
 import type { Place, WorldMap } from "../types";
 import { AddPlaceSheet } from "./add-place-sheet";
 import { MarkVisitedSheet } from "./mark-visited-sheet";
@@ -12,8 +12,9 @@ import { PlaceList } from "./place-list";
 import { VisitedMap } from "./visited-map";
 
 export function TravelView({ map }: { map: WorldMap }) {
-  const [places, setPlaces] = useState(mockPlaces);
-  const [markedVisited, setMarkedVisited] = useState(() => new Set(mockVisitedCountryIds));
+  const [places, setPlaces] = useState<Place[]>([]);
+  const [markedVisited, setMarkedVisited] = useState<Set<string>>(() => new Set());
+  const [loaded, setLoaded] = useState(false);
   const [adding, setAdding] = useState(false);
   const [marking, setMarking] = useState(false);
 
@@ -28,16 +29,58 @@ export function TravelView({ map }: { map: WorldMap }) {
       countryName(a.countryId).localeCompare(countryName(b.countryId), "en") || a.name.localeCompare(b.name, "en"),
   );
 
-  const toggleCountry = (id: string) =>
-    setMarkedVisited((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const [placesRes, countriesRes] = await Promise.all([
+        supabase.from("places").select("id, name, country_id").order("created_at"),
+        supabase.from("visited_countries").select("country_id"),
+      ]);
+      if (cancelled) return;
+      if (placesRes.error) console.error("Loading places failed", placesRes.error);
+      if (countriesRes.error) console.error("Loading countries failed", countriesRes.error);
+      setPlaces((placesRes.data ?? []).map((p) => ({ id: p.id, name: p.name, countryId: p.country_id })));
+      setMarkedVisited(new Set((countriesRes.data ?? []).map((c) => c.country_id)));
+      setLoaded(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const addPlace = (place: Omit<Place, "id">) =>
-    setPlaces((prev) => [...prev, { ...place, id: crypto.randomUUID() }]);
+  const toggleCountry = async (id: string) => {
+    if (fromPlaces.has(id)) return;
+    const wasMarked = markedVisited.has(id);
+    const flip = (on: boolean) =>
+      setMarkedVisited((prev) => {
+        const next = new Set(prev);
+        if (on) next.add(id);
+        else next.delete(id);
+        return next;
+      });
+    flip(!wasMarked);
+
+    const table = createClient().from("visited_countries");
+    const { error } = wasMarked ? await table.delete().eq("country_id", id) : await table.insert({ country_id: id });
+    if (error) {
+      console.error("Updating country failed", error);
+      flip(wasMarked);
+    }
+  };
+
+  const addPlace = async (fields: Omit<Place, "id">) => {
+    const place: Place = { ...fields, id: crypto.randomUUID() };
+    setPlaces((prev) => [...prev, place]);
+
+    const { error } = await createClient()
+      .from("places")
+      .insert({ id: place.id, name: place.name, country_id: place.countryId });
+    if (error) {
+      console.error("Adding place failed", error);
+      setPlaces((prev) => prev.filter((p) => p.id !== place.id));
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -64,7 +107,7 @@ export function TravelView({ map }: { map: WorldMap }) {
 
       <section>
         <h2 className="text-xs text-muted-foreground">Places</h2>
-        <PlaceList places={sortedPlaces} countryName={countryName} />
+        {loaded && <PlaceList places={sortedPlaces} countryName={countryName} />}
       </section>
 
       <MarkVisitedSheet

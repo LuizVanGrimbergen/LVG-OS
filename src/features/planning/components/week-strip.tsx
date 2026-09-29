@@ -1,16 +1,16 @@
 import { Check } from "lucide-react";
 import { addDays, daysBetween, startOfWeek, toDateKey } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import { wasDayCompleted } from "../mock-data";
 
 const weekday = new Intl.DateTimeFormat("en-GB", { weekday: "short" });
 
 type WeekStripProps = {
   today: Date;
-  todayCompleted: boolean;
+  /** Whether all tasks were done on that day ("YYYY-MM-DD"). */
+  isCompleted: (dayKey: string) => boolean;
 };
 
-export function WeekStrip({ today, todayCompleted }: WeekStripProps) {
+export function WeekStrip({ today, isCompleted }: WeekStripProps) {
   const monday = startOfWeek(today);
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
 
@@ -19,7 +19,7 @@ export function WeekStrip({ today, todayCompleted }: WeekStripProps) {
       {days.map((day) => {
         const daysAgo = daysBetween(day, today);
         const isToday = daysAgo === 0;
-        const completed = isToday ? todayCompleted : daysAgo > 0 && wasDayCompleted(daysAgo);
+        const completed = daysAgo >= 0 && isCompleted(toDateKey(day));
 
         return (
           <li

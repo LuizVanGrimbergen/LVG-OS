@@ -8,6 +8,4 @@ export type Goal = {
   kind: "count" | "percent";
   current: number;
   target: number;
-  /** Weekly goals reset every Monday. */
-  period?: "week";
 };

@@ -1,23 +1,62 @@
 "use client";
 
-import { createContext, use, useState, type ReactNode } from "react";
+import { createContext, use, useEffect, useState, type ReactNode } from "react";
+import { useDayPart } from "@/hooks/use-day-part";
+import { createClient } from "@/lib/supabase/client";
 import type { DailyNote } from "./types";
 
 type ReflectionContextValue = {
   notes: Record<string, DailyNote>;
+  /** The day whose note has finished loading. */
+  loadedDay: string | null;
   save: (dateKey: string, field: keyof DailyNote, text: string) => void;
 };
 
 const ReflectionContext = createContext<ReflectionContextValue | null>(null);
 
-/** Daily notes by date key. In-memory for now; Supabase will replace this. */
+/** The current day's intention and reflection, stored in Supabase. */
 export function ReflectionProvider({ children }: { children: ReactNode }) {
+  const dateKey = useDayPart()?.dateKey;
   const [notes, setNotes] = useState<Record<string, DailyNote>>({});
+  const [loadedDay, setLoadedDay] = useState<string | null>(null);
 
-  const save = (dateKey: string, field: keyof DailyNote, text: string) =>
-    setNotes((prev) => ({ ...prev, [dateKey]: { ...prev[dateKey], [field]: text } }));
+  useEffect(() => {
+    if (!dateKey) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await createClient()
+        .from("daily_notes")
+        .select("intention, reflection")
+        .eq("day", dateKey)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error) console.error("Loading notes failed", error);
+      if (data) {
+        const note: DailyNote = { intention: data.intention ?? undefined, reflection: data.reflection ?? undefined };
+        setNotes((prev) => ({ ...prev, [dateKey]: note }));
+      }
+      setLoadedDay(dateKey);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [dateKey]);
 
-  return <ReflectionContext value={{ notes, save }}>{children}</ReflectionContext>;
+  const save = async (day: string, field: keyof DailyNote, text: string) => {
+    const before = notes[day];
+    setNotes((prev) => ({ ...prev, [day]: { ...prev[day], [field]: text } }));
+
+    // Upsert only touches the column we send, so the other half of the day stays.
+    const { error } = await createClient()
+      .from("daily_notes")
+      .upsert({ day, [field]: text }, { onConflict: "user_id,day" });
+    if (error) {
+      console.error("Saving note failed", error);
+      setNotes((prev) => ({ ...prev, [day]: before ?? {} }));
+    }
+  };
+
+  return <ReflectionContext value={{ notes, loadedDay, save }}>{children}</ReflectionContext>;
 }
 
 export function useReflection(): ReflectionContextValue {

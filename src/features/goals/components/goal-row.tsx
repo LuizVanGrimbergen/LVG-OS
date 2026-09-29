@@ -33,7 +33,6 @@ export function GoalRow({ goal, onStep, onOptions }: GoalRowProps) {
       <div className="flex items-baseline justify-between gap-3 text-[15px]">
         <span className={cn(done && "text-muted-foreground")}>
           {goal.title}
-          {goal.period === "week" && <span className="ml-2 text-xs text-muted-foreground">this week</span>}
         </span>
         <span className="shrink-0 text-sm tabular-nums text-muted-foreground">{value}</span>
       </div>

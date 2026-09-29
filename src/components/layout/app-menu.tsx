@@ -32,6 +32,9 @@ export function AppMenu() {
 
   const Icon = open ? X : (current?.icon ?? Menu);
 
+  // No navigation before you're signed in.
+  if (pathname.startsWith("/login")) return null;
+
   return (
     <>
       <AnimatePresence>
