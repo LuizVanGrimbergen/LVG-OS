@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowUp, Pencil } from "lucide-react";
+import { ArrowUp, Pencil, type LucideIcon } from "lucide-react";
 
 type PromptCardProps = {
+  icon: LucideIcon;
   label: string;
   question: string;
   placeholder: string;
@@ -14,7 +15,7 @@ type PromptCardProps = {
 };
 
 /** A one-line question: an input until answered, then the answer (tap to edit). */
-export function PromptCard({ label, question, placeholder, value, context, onSave }: PromptCardProps) {
+export function PromptCard({ icon: Icon, label, question, placeholder, value, context, onSave }: PromptCardProps) {
   const [editing, setEditing] = useState(!value);
   const [draft, setDraft] = useState(value ?? "");
 
@@ -28,7 +29,10 @@ export function PromptCard({ label, question, placeholder, value, context, onSav
 
   return (
     <div className="rounded-2xl bg-card px-4 py-4">
-      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Icon className="size-3.5" />
+        {label}
+      </p>
       {context && <p className="mt-1 text-xs text-muted-foreground">This morning: {context}</p>}
       <p className="mt-1 text-[15px]">{question}</p>
 

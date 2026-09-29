@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LogOut } from "lucide-react";
+import { CircleUserRound, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export function AccountSection() {
@@ -25,7 +25,10 @@ export function AccountSection() {
 
   return (
     <section className="rounded-2xl bg-card px-4 py-4">
-      <p className="text-xs text-muted-foreground">Signed in as</p>
+      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <CircleUserRound className="size-3.5" />
+        Signed in as
+      </p>
       <p className="mt-1 truncate text-[15px]">{email ?? " "}</p>
       <button
         type="button"

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { CalendarDays } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { useTodayKey } from "@/hooks/use-today";
@@ -89,7 +90,10 @@ export function TasksView() {
       />
 
       <section>
-        <h2 className="text-xs text-muted-foreground">{selected === todayKey ? `Today · ${label}` : label}</h2>
+        <h2 className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <CalendarDays className="size-3.5" />
+          {selected === todayKey ? `Today · ${label}` : label}
+        </h2>
         {!loaded ? null : tasks.length === 0 ? (
           <p className="py-4 text-sm text-muted-foreground">Nothing planned. Add a task with the +.</p>
         ) : (

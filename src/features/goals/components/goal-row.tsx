@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { Trophy } from "lucide-react";
 import { useLongPress } from "@/hooks/use-long-press";
 import { cn } from "@/lib/utils";
 import type { Goal } from "../types";
@@ -34,7 +35,10 @@ export function GoalRow({ goal, onStep, onOptions }: GoalRowProps) {
         <span className={cn(done && "text-muted-foreground")}>
           {goal.title}
         </span>
-        <span className="shrink-0 text-sm tabular-nums text-muted-foreground">{value}</span>
+        <span className="flex shrink-0 items-center gap-1.5 text-sm tabular-nums text-muted-foreground">
+          {done && <Trophy className="size-3.5 text-emerald-400" aria-label="Completed" />}
+          {value}
+        </span>
       </div>
       <div className="mt-2 h-1 overflow-hidden rounded-full bg-border">
         <motion.div

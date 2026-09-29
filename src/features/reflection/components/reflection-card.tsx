@@ -1,5 +1,6 @@
 "use client";
 
+import { Moon, Sun, Sunrise } from "lucide-react";
 import { useDayPart } from "@/hooks/use-day-part";
 import { useReflection } from "../reflection-context";
 import { PromptCard } from "./prompt-card";
@@ -20,6 +21,7 @@ export function ReflectionCard() {
     return (
       <PromptCard
         key={`${dateKey}-intention`}
+        icon={Sunrise}
         label="This morning"
         question="Today I want to…"
         placeholder="Send 3 mails and go for a run"
@@ -33,7 +35,10 @@ export function ReflectionCard() {
     if (!note.intention) return null;
     return (
       <div className="rounded-2xl bg-card px-4 py-4">
-        <p className="text-xs text-muted-foreground">Today I want to…</p>
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Sun className="size-3.5" />
+          Today I want to…
+        </p>
         <p className="mt-1 text-[15px]">{note.intention}</p>
       </div>
     );
@@ -42,6 +47,7 @@ export function ReflectionCard() {
   return (
     <PromptCard
       key={`${dateKey}-reflection`}
+      icon={Moon}
       label="Tonight"
       question="What went well today?"
       placeholder="One line"

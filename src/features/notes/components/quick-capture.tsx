@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Lightbulb } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { MAX_NOTE_LENGTH } from "../types";
 
@@ -33,17 +33,20 @@ export function QuickCapture({ onSaved }: { onSaved?: () => void }) {
   return (
     <div className="rounded-2xl bg-card px-4 py-4">
       <form onSubmit={save} className="flex items-center gap-2">
-        <input
-          value={body}
-          maxLength={MAX_NOTE_LENGTH}
-          onChange={(e) => {
-            setBody(e.target.value);
-            if (status !== "saving") setStatus("idle");
-          }}
-          placeholder="Capture a thought…"
-          aria-label="Capture a thought"
-          className="h-11 min-w-0 flex-1 rounded-xl border border-input bg-transparent px-3 text-base outline-none focus:border-ring"
-        />
+        <div className="relative min-w-0 flex-1">
+          <Lightbulb className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={body}
+            maxLength={MAX_NOTE_LENGTH}
+            onChange={(e) => {
+              setBody(e.target.value);
+              if (status !== "saving") setStatus("idle");
+            }}
+            placeholder="Capture a thought…"
+            aria-label="Capture a thought"
+            className="h-11 w-full rounded-xl border border-input bg-transparent pr-3 pl-9 text-base outline-none focus:border-ring"
+          />
+        </div>
         <button
           type="submit"
           aria-label="Save note"

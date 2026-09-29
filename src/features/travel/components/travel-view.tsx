@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Pencil } from "lucide-react";
+import { Globe, MapPin, Pencil } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
 import { DeleteSheet } from "@/components/layout/delete-sheet";
 import { PageHeader } from "@/components/layout/page-header";
@@ -101,7 +101,8 @@ export function TravelView({ map }: { map: WorldMap }) {
 
       <section>
         <div className="flex items-center justify-between">
-          <h2 className="text-xs text-muted-foreground">
+          <h2 className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Globe className="size-3.5" />
             Been to · {visited.size} {visited.size === 1 ? "country" : "countries"}
           </h2>
           <button
@@ -119,7 +120,10 @@ export function TravelView({ map }: { map: WorldMap }) {
       </section>
 
       <section>
-        <h2 className="text-xs text-muted-foreground">Places</h2>
+        <h2 className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <MapPin className="size-3.5" />
+          Places
+        </h2>
         {loaded && <PlaceList places={sortedPlaces} countryName={countryName} onOptions={setSelected} />}
       </section>
 

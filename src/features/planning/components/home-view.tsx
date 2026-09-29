@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { QuickCapture } from "@/features/notes/components/quick-capture";
+import { DailyQuote } from "@/features/quotes/components/daily-quote";
 import { ReflectionCard } from "@/features/reflection/components/reflection-card";
 import { SmokeFreeCard } from "@/features/streaks/components/smoke-free-card";
 import { useTodayKey } from "@/hooks/use-today";
@@ -30,6 +31,8 @@ export function HomeView() {
       <PageHeader title="Home" back={false} />
       {/* The week depends on the device clock, so it renders client-side only. */}
       <div className="min-h-[76px]">{today && <WeekStrip today={today} isCompleted={isDayCompleted} />}</div>
+
+      {todayKey && <DailyQuote dateKey={todayKey} />}
 
       <div className="space-y-2">
         <div className="grid grid-cols-2 gap-2">
