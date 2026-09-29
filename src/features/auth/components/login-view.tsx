@@ -24,7 +24,13 @@ export function LoginView() {
     setError("");
     const { error } = await createClient().auth.signInWithOtp({ email: email.trim() });
     setBusy(false);
-    if (error) return setError(error.message);
+    if (error) {
+      return setError(
+        error.status === 429
+          ? "Too many emails sent. Wait a bit, or use a code you already received."
+          : error.message,
+      );
+    }
     setStep("code");
   };
 
@@ -66,6 +72,17 @@ export function LoginView() {
           <Button type="submit" size="lg" disabled={busy} className="h-12 w-full rounded-xl text-base">
             {busy ? "Sending…" : "Send code"}
           </Button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!email.trim()) return setError("Enter your email first.");
+              setError("");
+              setStep("code");
+            }}
+            className="w-full py-2 text-sm text-muted-foreground"
+          >
+            I already have a code
+          </button>
         </form>
       ) : (
         <form onSubmit={verify} className="mt-8 space-y-4">
