@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
+import { AnimatedList, AnimatedListItem } from "@/components/motion/animated-list";
 import { useTasks } from "@/features/planning/tasks-context";
 import { useTodayKey } from "@/hooks/use-today";
 import { toDateKey } from "@/lib/date";
@@ -78,16 +79,16 @@ export function NotesView() {
       <QuickCapture onSaved={refresh} />
 
       {loaded && notes.length === 0 && <p className="py-4 text-sm text-muted-foreground">Nothing captured yet.</p>}
-      <ul className="divide-y divide-border">
+      <AnimatedList className="divide-y divide-border">
         {notes.map((note) => (
-          <li key={note.id}>
+          <AnimatedListItem key={note.id}>
             <button type="button" onClick={() => setSelected(note)} className="block w-full py-4 text-left">
               <p className="line-clamp-3 text-[15px] whitespace-pre-wrap">{note.body}</p>
               <p className="mt-1 text-xs text-muted-foreground">{when(note.created_at, todayKey)}</p>
             </button>
-          </li>
+          </AnimatedListItem>
         ))}
-      </ul>
+      </AnimatedList>
 
       <NoteOptionsSheet note={selected} onMakeTask={makeTask} onDelete={remove} onClose={() => setSelected(null)} />
     </div>

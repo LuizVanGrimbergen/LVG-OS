@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { PageHeader } from "@/components/layout/page-header";
+import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { QuickCapture } from "@/features/notes/components/quick-capture";
 import { DailyQuote } from "@/features/quotes/components/daily-quote";
 import { ReflectionCard } from "@/features/reflection/components/reflection-card";
@@ -26,22 +27,31 @@ export function HomeView() {
 
   const loaded = !!weekFrom && !!weekTo && isLoaded(weekFrom, weekTo);
 
+  // Cards appear one after another from the top.
   return (
-    <div className="space-y-6">
+    <Stagger className="space-y-6">
       <PageHeader title="Home" back={false} />
       {/* The week depends on the device clock, so it renders client-side only. */}
-      <div className="min-h-[76px]">{today && <WeekStrip today={today} isCompleted={isDayCompleted} />}</div>
+      <StaggerItem className="min-h-[76px]">
+        {today && <WeekStrip today={today} isCompleted={isDayCompleted} />}
+      </StaggerItem>
 
-      {todayKey && <DailyQuote dateKey={todayKey} />}
+      {todayKey && (
+        <StaggerItem>
+          <DailyQuote dateKey={todayKey} />
+        </StaggerItem>
+      )}
 
       <div className="space-y-2">
-        <div className="grid grid-cols-2 gap-2">
+        <StaggerItem className="grid grid-cols-2 gap-2">
           {today ? <SmokeFreeCard today={today} /> : <div className="rounded-2xl bg-card" />}
           <TasksCard tasks={todayKey ? tasksOn(todayKey) : []} loaded={loaded} />
-        </div>
-        <QuickCapture />
-        <ReflectionCard />
+        </StaggerItem>
+        <StaggerItem className="space-y-2">
+          <QuickCapture />
+          <ReflectionCard />
+        </StaggerItem>
       </div>
-    </div>
+    </Stagger>
   );
 }

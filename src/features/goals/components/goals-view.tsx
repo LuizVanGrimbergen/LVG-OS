@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Briefcase, Dumbbell } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
 import { DeleteSheet } from "@/components/layout/delete-sheet";
+import { AnimatedList, AnimatedListItem } from "@/components/motion/animated-list";
 import { PageHeader } from "@/components/layout/page-header";
 import { celebrate } from "@/lib/celebrate";
 import { createClient } from "@/lib/supabase/client";
@@ -92,11 +93,13 @@ export function GoalsView() {
               <Icon className="size-3.5" />
               {label}
             </h2>
-            <div className="divide-y divide-border">
+            <AnimatedList className="divide-y divide-border">
               {inCategory.map((goal) => (
-                <GoalRow key={goal.id} goal={goal} onStep={step} onOptions={setSelected} />
+                <AnimatedListItem key={goal.id}>
+                  <GoalRow goal={goal} onStep={step} onOptions={setSelected} />
+                </AnimatedListItem>
               ))}
-            </div>
+            </AnimatedList>
           </section>
         );
       })}

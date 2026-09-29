@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { Check } from "lucide-react";
+import { AnimatedList, AnimatedListItem } from "@/components/motion/animated-list";
 import { useLongPress } from "@/hooks/use-long-press";
 import { cn } from "@/lib/utils";
 import type { Task } from "../types";
@@ -15,13 +16,13 @@ type FocusListProps = {
 
 export function FocusList({ tasks, onToggle, onOptions }: FocusListProps) {
   return (
-    <ul className="divide-y divide-border">
+    <AnimatedList className="divide-y divide-border">
       {tasks.map((task) => (
-        <li key={task.id}>
+        <AnimatedListItem key={task.id}>
           <TaskRow task={task} onToggle={onToggle} onOptions={onOptions} />
-        </li>
+        </AnimatedListItem>
       ))}
-    </ul>
+    </AnimatedList>
   );
 }
 

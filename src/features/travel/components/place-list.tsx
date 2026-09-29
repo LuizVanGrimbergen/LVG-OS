@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatedList, AnimatedListItem } from "@/components/motion/animated-list";
 import { useLongPress } from "@/hooks/use-long-press";
 import type { Place } from "../types";
 
@@ -16,13 +17,13 @@ export function PlaceList({ places, countryName, onOptions }: PlaceListProps) {
   }
 
   return (
-    <ul className="divide-y divide-border">
+    <AnimatedList className="divide-y divide-border">
       {places.map((place) => (
-        <li key={place.id}>
+        <AnimatedListItem key={place.id}>
           <PlaceRow place={place} country={countryName(place.countryId)} onOptions={onOptions} />
-        </li>
+        </AnimatedListItem>
       ))}
-    </ul>
+    </AnimatedList>
   );
 }
 
