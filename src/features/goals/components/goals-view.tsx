@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { categories, mockGoals } from "../mock-data";
 import type { Goal } from "../types";
 import { AddGoalSheet } from "./add-goal-sheet";
+import { GoalOptionsSheet } from "./goal-options-sheet";
 import { GoalRow } from "./goal-row";
 
 const categoryIcons = { sport: Dumbbell, work: Briefcase };
@@ -14,6 +15,7 @@ const categoryIcons = { sport: Dumbbell, work: Briefcase };
 export function GoalsView() {
   const [goals, setGoals] = useState(mockGoals);
   const [adding, setAdding] = useState(false);
+  const [selected, setSelected] = useState<Goal | null>(null);
 
   const step = (id: string) =>
     setGoals((prev) =>
@@ -21,6 +23,8 @@ export function GoalsView() {
         g.id === id ? { ...g, current: Math.min(g.current + (g.kind === "percent" ? 10 : 1), g.target) } : g,
       ),
     );
+
+  const remove = (id: string) => setGoals((prev) => prev.filter((g) => g.id !== id));
 
   const add = (goal: Omit<Goal, "id">) => setGoals((prev) => [...prev, { ...goal, id: crypto.randomUUID() }]);
 
@@ -30,6 +34,8 @@ export function GoalsView() {
         title="Goals"
         action={<AddButton label="New goal" onClick={() => setAdding(true)} />}
       />
+
+      {goals.length === 0 && <p className="py-4 text-sm text-muted-foreground">Add goals with the +.</p>}
 
       {categories.map(({ id, label }) => {
         const Icon = categoryIcons[id];
@@ -43,13 +49,14 @@ export function GoalsView() {
             </h2>
             <div className="divide-y divide-border">
               {inCategory.map((goal) => (
-                <GoalRow key={goal.id} goal={goal} onStep={step} />
+                <GoalRow key={goal.id} goal={goal} onStep={step} onOptions={setSelected} />
               ))}
             </div>
           </section>
         );
       })}
 
+      <GoalOptionsSheet goal={selected} onClose={() => setSelected(null)} onDelete={remove} />
       <AddGoalSheet open={adding} onClose={() => setAdding(false)} onAdd={add} />
     </div>
   );

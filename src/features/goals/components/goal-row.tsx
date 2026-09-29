@@ -1,27 +1,34 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useLongPress } from "@/hooks/use-long-press";
 import { cn } from "@/lib/utils";
 import type { Goal } from "../types";
 
 type GoalRowProps = {
   goal: Goal;
   onStep: (id: string) => void;
+  /** Hold the row to open its options. */
+  onOptions: (goal: Goal) => void;
 };
 
-export function GoalRow({ goal, onStep }: GoalRowProps) {
+export function GoalRow({ goal, onStep, onOptions }: GoalRowProps) {
   const progress = Math.min(goal.current / goal.target, 1);
   const done = progress >= 1;
   const value = goal.kind === "percent" ? `${goal.current}%` : `${goal.current}/${goal.target}`;
   const step = goal.kind === "percent" ? "+10%" : "+1";
+  const press = useLongPress(
+    () => onOptions(goal),
+    () => onStep(goal.id),
+  );
 
   return (
     <motion.button
       type="button"
-      onClick={() => onStep(goal.id)}
+      {...press}
       whileTap={{ scale: 0.98 }}
-      aria-label={`${goal.title}, ${value}. Tap for ${step}`}
-      className="block w-full py-4 text-left"
+      aria-label={`${goal.title}, ${value}. Tap for ${step}, hold for options`}
+      className="block w-full touch-manipulation py-4 text-left select-none [-webkit-touch-callout:none]"
     >
       <div className="flex items-baseline justify-between gap-3 text-[15px]">
         <span className={cn(done && "text-muted-foreground")}>

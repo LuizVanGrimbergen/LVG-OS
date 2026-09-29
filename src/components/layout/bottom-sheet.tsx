@@ -18,7 +18,7 @@ export function BottomSheet({ open, title, onClose, onSubmit, children }: Bottom
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 z-60 bg-black/60"
+            className="fixed inset-0 z-100 bg-black/60"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -29,7 +29,7 @@ export function BottomSheet({ open, title, onClose, onSubmit, children }: Bottom
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="fixed inset-x-0 bottom-0 z-70 mx-auto max-w-md space-y-5 rounded-t-3xl border-t border-border bg-card px-4 pt-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
+            className="fixed inset-x-0 bottom-0 z-110 mx-auto max-w-md space-y-5 rounded-t-3xl border-t border-border bg-card px-4 pt-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
