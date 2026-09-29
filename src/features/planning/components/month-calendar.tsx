@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { addDays, endOfMonth, fromDateKey, startOfWeek, toDateKey } from "@/lib/date";
 import { cn } from "@/lib/utils";
 
@@ -12,8 +12,12 @@ type MonthCalendarProps = {
   month: Date;
   selected: string;
   today: string;
+  /** Show only the week of the selected day. */
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
   onSelect: (day: string) => void;
-  onMonthChange: (offset: -1 | 1) => void;
+  /** Previous/next: a month when open, a week when collapsed. */
+  onStep: (offset: -1 | 1) => void;
   hasTasks: (day: string) => boolean;
   isCompleted: (day: string) => boolean;
 };
@@ -29,31 +33,50 @@ export function MonthCalendar({
   month,
   selected,
   today,
+  collapsed,
+  onToggleCollapsed,
   onSelect,
-  onMonthChange,
+  onStep,
   hasTasks,
   isCompleted,
 }: MonthCalendarProps) {
-  const { from, to } = monthGridRange(month);
   const days: Date[] = [];
-  for (let d = fromDateKey(from); toDateKey(d) <= to; d = addDays(d, 1)) days.push(d);
+  if (collapsed) {
+    const monday = startOfWeek(fromDateKey(selected));
+    for (let i = 0; i < 7; i++) days.push(addDays(monday, i));
+  } else {
+    const { from, to } = monthGridRange(month);
+    for (let d = fromDateKey(from); toDateKey(d) <= to; d = addDays(d, 1)) days.push(d);
+  }
+  const unit = collapsed ? "week" : "month";
 
   return (
     <section>
       <div className="flex items-center justify-between">
         <button
           type="button"
-          onClick={() => onMonthChange(-1)}
-          aria-label="Previous month"
+          onClick={() => onStep(-1)}
+          aria-label={`Previous ${unit}`}
           className="flex size-10 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
         >
           <ChevronLeft className="size-5" />
         </button>
-        <h2 className="text-[15px] font-medium">{monthLabel.format(month)}</h2>
         <button
           type="button"
-          onClick={() => onMonthChange(1)}
-          aria-label="Next month"
+          onClick={onToggleCollapsed}
+          aria-expanded={!collapsed}
+          aria-label={collapsed ? "Show the whole month" : "Show only this week"}
+          className="flex items-center gap-1 rounded-full px-3 py-2 text-[15px] font-medium active:bg-muted"
+        >
+          {monthLabel.format(collapsed ? fromDateKey(selected) : month)}
+          <ChevronDown
+            className={cn("size-4 text-muted-foreground transition-transform", !collapsed && "rotate-180")}
+          />
+        </button>
+        <button
+          type="button"
+          onClick={() => onStep(1)}
+          aria-label={`Next ${unit}`}
           className="flex size-10 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
         >
           <ChevronRight className="size-5" />
@@ -68,8 +91,8 @@ export function MonthCalendar({
         ))}
         {days.map((date) => {
           const key = toDateKey(date);
-          const inMonth = date.getMonth() === month.getMonth();
-          if (!inMonth) return <span key={key} />;
+          // The month grid leaves days of other months empty; the week view shows them all.
+          if (!collapsed && date.getMonth() !== month.getMonth()) return <span key={key} />;
 
           const isSelected = key === selected;
           const isToday = key === today;

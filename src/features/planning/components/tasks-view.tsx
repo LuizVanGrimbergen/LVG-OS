@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { AddButton } from "@/components/layout/add-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { useTodayKey } from "@/hooks/use-today";
-import { fromDateKey, isDateKey, startOfMonth } from "@/lib/date";
+import { addDays, fromDateKey, isDateKey, startOfMonth, toDateKey } from "@/lib/date";
 import { useTasks } from "../tasks-context";
 import type { Task } from "../types";
 import { AddTaskSheet } from "./add-task-sheet";
@@ -15,6 +15,25 @@ import { TaskOptionsSheet } from "./task-options-sheet";
 
 const dayLabel = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" });
 
+// Remembers on this device whether the calendar is collapsed to one week.
+const COLLAPSED_KEY = "lvg-os:tasks-calendar-collapsed";
+
+function readCollapsed(): boolean {
+  try {
+    return typeof window !== "undefined" && localStorage.getItem(COLLAPSED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeCollapsed(collapsed: boolean) {
+  try {
+    localStorage.setItem(COLLAPSED_KEY, collapsed ? "1" : "0");
+  } catch {
+    // Storage unavailable (private mode): the choice just isn't remembered.
+  }
+}
+
 export function TasksView() {
   const todayKey = useTodayKey();
   const dayParam = useSearchParams().get("day");
@@ -23,6 +42,7 @@ export function TasksView() {
   // Selected day: from the link (?day=…) or today. Shown month: follows the selection until you page.
   const [pickedDay, setPickedDay] = useState<string | null>(isDateKey(dayParam) ? dayParam : null);
   const [monthOffset, setMonthOffset] = useState(0);
+  const [collapsed, setCollapsed] = useState(readCollapsed);
   const [adding, setAdding] = useState(false);
   const [options, setOptions] = useState<Task | null>(null);
 
@@ -50,11 +70,20 @@ export function TasksView() {
         month={month}
         selected={selected}
         today={todayKey}
+        collapsed={collapsed}
+        onToggleCollapsed={() => {
+          setCollapsed(!collapsed);
+          writeCollapsed(!collapsed);
+          setMonthOffset(0);
+        }}
         onSelect={(day) => {
           setPickedDay(day);
           setMonthOffset(0);
         }}
-        onMonthChange={(offset) => setMonthOffset((o) => o + offset)}
+        onStep={(offset) => {
+          if (collapsed) setPickedDay(toDateKey(addDays(fromDateKey(selected), offset * 7)));
+          else setMonthOffset((o) => o + offset);
+        }}
         hasTasks={(day) => tasksOn(day).length > 0}
         isCompleted={isDayCompleted}
       />
