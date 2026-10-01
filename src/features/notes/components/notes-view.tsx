@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Archive, Inbox } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { AnimatedList, AnimatedListItem } from "@/components/motion/animated-list";
+import { AddGoalSheet } from "@/features/goals/components/add-goal-sheet";
+import { useGoals } from "@/features/goals/use-goals";
 import { useTasks } from "@/features/planning/tasks-context";
 import { useTodayKey } from "@/hooks/use-today";
 import { toDateKey } from "@/lib/date";
@@ -20,23 +23,33 @@ function when(createdAt: string, today: string | null): string {
   return toDateKey(d) === today ? `Today ${time.format(d)}` : date.format(d);
 }
 
-const TASK_TITLE_MAX = 200;
+const TITLE_MAX = 200;
+const shorten = (text: string) => (text.length > TITLE_MAX ? `${text.slice(0, TITLE_MAX - 1)}…` : text);
 
 async function fetchNotes(): Promise<Note[]> {
   const { data, error } = await createClient()
     .from("notes")
-    .select("id, body, created_at")
+    .select("id, body, created_at, archived_at")
     .order("created_at", { ascending: false });
   if (error) console.error("Loading notes failed", error);
   return data ?? [];
 }
 
-export function NotesView() {
+type NotesViewProps = {
+  /** Text shared from another app, to prefill the capture field. */
+  shared?: string;
+};
+
+/** Captured notes: an inbox to sort into tasks or goals, and an archive. */
+export function NotesView({ shared }: NotesViewProps) {
   const todayKey = useTodayKey();
   const { add: addTask } = useTasks();
+  const { add: addGoal } = useGoals();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [showArchive, setShowArchive] = useState(false);
   const [selected, setSelected] = useState<Note | null>(null);
+  const [goalFrom, setGoalFrom] = useState<Note | null>(null);
 
   const refresh = useCallback(async () => {
     setNotes(await fetchNotes());
@@ -56,6 +69,10 @@ export function NotesView() {
     };
   }, []);
 
+  const inbox = notes.filter((n) => !n.archived_at);
+  const archive = notes.filter((n) => n.archived_at);
+  const shown = showArchive ? archive : inbox;
+
   const remove = async (id: string) => {
     const before = notes;
     setNotes((prev) => prev.filter((n) => n.id !== id));
@@ -66,21 +83,53 @@ export function NotesView() {
     }
   };
 
-  const makeTask = (note: Note) => {
-    if (!todayKey) return;
-    const title = note.body.length > TASK_TITLE_MAX ? `${note.body.slice(0, TASK_TITLE_MAX - 1)}…` : note.body;
-    addTask(title, todayKey);
-    void remove(note.id);
+  const setArchived = async (note: Note, archived: boolean) => {
+    const archived_at = archived ? new Date().toISOString() : null;
+    setNotes((prev) => prev.map((n) => (n.id === note.id ? { ...n, archived_at } : n)));
+    const { error } = await createClient().from("notes").update({ archived_at }).eq("id", note.id);
+    if (error) {
+      console.error("Archiving note failed", error);
+      setNotes((prev) => prev.map((n) => (n.id === note.id ? note : n)));
+    }
+  };
+
+  // A sorted note moves to the archive, so you can still find what it said.
+  const makeTask = (note: Note, day: string) => {
+    addTask(shorten(note.body), day);
+    void setArchived(note, true);
   };
 
   return (
     <div className="space-y-4">
       <PageHeader title="Notes" />
-      <QuickCapture onSaved={refresh} />
+      <QuickCapture key={shared} initialBody={shared} onSaved={refresh} />
 
-      {loaded && notes.length === 0 && <p className="py-4 text-sm text-muted-foreground">Nothing captured yet.</p>}
+      <div className="flex gap-4 px-1 text-xs" role="tablist">
+        {[
+          { archived: false, label: `Inbox · ${inbox.length}`, icon: Inbox },
+          { archived: true, label: `Archive · ${archive.length}`, icon: Archive },
+        ].map(({ archived, label, icon: Icon }) => (
+          <button
+            key={label}
+            type="button"
+            role="tab"
+            aria-selected={showArchive === archived}
+            onClick={() => setShowArchive(archived)}
+            className={`-my-2 flex items-center gap-1.5 py-2 ${showArchive === archived ? "text-foreground" : "text-muted-foreground"}`}
+          >
+            <Icon className="size-3.5" />
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {loaded && shown.length === 0 && (
+        <p className="py-4 text-sm text-muted-foreground">
+          {showArchive ? "Nothing archived yet." : notes.length ? "Inbox zero. Nicely sorted." : "Nothing captured yet."}
+        </p>
+      )}
       <AnimatedList className="divide-y divide-border">
-        {notes.map((note) => (
+        {shown.map((note) => (
           <AnimatedListItem key={note.id}>
             <button type="button" onClick={() => setSelected(note)} className="block w-full py-4 text-left">
               <p className="line-clamp-3 text-[15px] whitespace-pre-wrap">{note.body}</p>
@@ -90,7 +139,27 @@ export function NotesView() {
         ))}
       </AnimatedList>
 
-      <NoteOptionsSheet note={selected} onMakeTask={makeTask} onDelete={remove} onClose={() => setSelected(null)} />
+      {todayKey && (
+        <NoteOptionsSheet
+          note={selected}
+          today={todayKey}
+          onMakeTask={makeTask}
+          onMakeGoal={setGoalFrom}
+          onArchive={setArchived}
+          onDelete={remove}
+          onClose={() => setSelected(null)}
+        />
+      )}
+      <AddGoalSheet
+        key={goalFrom?.id ?? "none"}
+        open={goalFrom !== null}
+        initialTitle={goalFrom ? shorten(goalFrom.body) : ""}
+        onClose={() => setGoalFrom(null)}
+        onAdd={async (fields) => {
+          const note = goalFrom;
+          if ((await addGoal(fields)) && note) void setArchived(note, true);
+        }}
+      />
     </div>
   );
 }

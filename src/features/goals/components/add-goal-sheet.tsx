@@ -9,12 +9,14 @@ import type { Goal, GoalCategory } from "../types";
 
 type AddGoalSheetProps = {
   open: boolean;
+  /** Prefills the name, e.g. from a note. */
+  initialTitle?: string;
   onClose: () => void;
   onAdd: (goal: Omit<Goal, "id">) => void;
 };
 
-export function AddGoalSheet({ open, onClose, onAdd }: AddGoalSheetProps) {
-  const [title, setTitle] = useState("");
+export function AddGoalSheet({ open, initialTitle = "", onClose, onAdd }: AddGoalSheetProps) {
+  const [title, setTitle] = useState(initialTitle);
   const [category, setCategory] = useState<GoalCategory>("sport");
   const [target, setTarget] = useState("10");
   const [error, setError] = useState("");
