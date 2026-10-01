@@ -9,7 +9,7 @@ type ReflectionContextValue = {
   notes: Record<string, DailyNote>;
   /** The day whose note has finished loading. */
   loadedDay: string | null;
-  save: (dateKey: string, field: keyof DailyNote, text: string) => void;
+  save: <F extends keyof DailyNote>(dateKey: string, field: F, value: NonNullable<DailyNote[F]>) => void;
 };
 
 const ReflectionContext = createContext<ReflectionContextValue | null>(null);
@@ -26,13 +26,17 @@ export function ReflectionProvider({ children }: { children: ReactNode }) {
     (async () => {
       const { data, error } = await createClient()
         .from("daily_notes")
-        .select("intention, reflection")
+        .select("intention, reflection, mood")
         .eq("day", dateKey)
         .maybeSingle();
       if (cancelled) return;
       if (error) console.error("Loading notes failed", error);
       if (data) {
-        const note: DailyNote = { intention: data.intention ?? undefined, reflection: data.reflection ?? undefined };
+        const note: DailyNote = {
+          intention: data.intention ?? undefined,
+          reflection: data.reflection ?? undefined,
+          mood: data.mood ?? undefined,
+        };
         setNotes((prev) => ({ ...prev, [dateKey]: note }));
       }
       setLoadedDay(dateKey);
@@ -42,14 +46,14 @@ export function ReflectionProvider({ children }: { children: ReactNode }) {
     };
   }, [dateKey]);
 
-  const save = async (day: string, field: keyof DailyNote, text: string) => {
+  const save = async <F extends keyof DailyNote>(day: string, field: F, value: NonNullable<DailyNote[F]>) => {
     const before = notes[day];
-    setNotes((prev) => ({ ...prev, [day]: { ...prev[day], [field]: text } }));
+    setNotes((prev) => ({ ...prev, [day]: { ...prev[day], [field]: value } }));
 
     // Upsert only touches the column we send, so the other half of the day stays.
     const { error } = await createClient()
       .from("daily_notes")
-      .upsert({ day, [field]: text }, { onConflict: "user_id,day" });
+      .upsert({ day, [field]: value }, { onConflict: "user_id,day" });
     if (error) {
       console.error("Saving note failed", error);
       setNotes((prev) => ({ ...prev, [day]: before ?? {} }));

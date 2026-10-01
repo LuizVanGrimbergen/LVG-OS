@@ -1,4 +1,4 @@
-import { addDays, fromDateKey, toDateKey } from "@/lib/date";
+import { addDays, fromDateKey, startOfWeek, toDateKey } from "@/lib/date";
 
 /** Days in a row up to `today`, counting from today if done, otherwise from yesterday. */
 export function currentStreak(days: ReadonlySet<string>, today: string): number {
@@ -23,4 +23,16 @@ export function longestStreak(days: ReadonlySet<string>): number {
     best = Math.max(best, length);
   }
   return best;
+}
+
+/**
+ * Columns of a calendar heatmap: `weeks` weeks ending with the one containing `today`,
+ * each column Monday … Sunday as "YYYY-MM-DD".
+ */
+export function heatmapWeeks(today: string, weeks: number): string[][] {
+  const lastMonday = startOfWeek(fromDateKey(today));
+  return Array.from({ length: weeks }, (_, w) => {
+    const monday = addDays(lastMonday, (w - weeks + 1) * 7);
+    return Array.from({ length: 7 }, (_, d) => toDateKey(addDays(monday, d)));
+  });
 }

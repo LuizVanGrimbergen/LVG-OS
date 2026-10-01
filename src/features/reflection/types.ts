@@ -3,4 +3,6 @@ export type DailyNote = {
   intention?: string;
   /** Evening: "What went well today?" */
   reflection?: string;
+  /** Evening: mood 1 (rough) … 5 (great). */
+  mood?: number;
 };

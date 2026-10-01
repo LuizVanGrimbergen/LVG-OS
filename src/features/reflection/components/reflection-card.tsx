@@ -3,6 +3,7 @@
 import { Moon, Sun, Sunrise } from "lucide-react";
 import { useDayPart } from "@/hooks/use-day-part";
 import { useReflection } from "../reflection-context";
+import { MoodPicker } from "./mood-picker";
 import { PromptCard } from "./prompt-card";
 
 /**
@@ -45,15 +46,18 @@ export function ReflectionCard() {
   }
 
   return (
-    <PromptCard
-      key={`${dateKey}-reflection`}
-      icon={Moon}
-      label="Tonight"
-      question="What went well today?"
-      placeholder="One line"
-      value={note.reflection}
-      context={note.intention}
-      onSave={(text) => save(dateKey, "reflection", text)}
-    />
+    <div className="space-y-2">
+      <PromptCard
+        key={`${dateKey}-reflection`}
+        icon={Moon}
+        label="Tonight"
+        question="What went well today?"
+        placeholder="One line"
+        value={note.reflection}
+        context={note.intention}
+        onSave={(text) => save(dateKey, "reflection", text)}
+      />
+      <MoodPicker value={note.mood} onPick={(mood) => save(dateKey, "mood", mood)} />
+    </div>
   );
 }
