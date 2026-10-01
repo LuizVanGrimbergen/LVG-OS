@@ -30,22 +30,28 @@ npm run build && npm run start
 
 ## Supabase setup (once)
 
-1. Run [`supabase/schema.sql`](supabase/schema.sql) in the Supabase SQL Editor.
+1. Run [`supabase/schema.sql`](supabase/schema.sql) in the Supabase SQL Editor, then the other files in `supabase/` (`push-subscriptions.sql`, `notes.sql`, `routines.sql`, `weekly-reviews.sql`, and last `connected.sql`).
 2. Authentication → Users → Add user: create your account with a password (tick Auto Confirm). Optional: include `{{ .Token }}` in the Magic Link email template for the email-code fallback.
 3. Authentication → URL Configuration → Site URL: `https://lvg-os.vercel.app`.
 4. Turn off **Allow new users to sign up**.
 5. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local` and in Vercel.
 
+## Tests
+
+```bash
+npm test
+```
+
 ## Structure
 
 ```
 src/
-  app/            routes: / (Home), /tasks, /goals, /travel, /coach, /settings
+  app/            routes: / (Home), /tasks, /notes, /goals, /insights, /travel, /coach, /settings
   components/
     ui/           shadcn/ui components
     layout/       menu button, page header, bottom sheet
   features/       modules: planning, goals, travel, notes, coach, settings, ...
   hooks/          shared React hooks
-  lib/            helpers, incl. supabase/client.ts and supabase/server.ts
+  lib/            helpers, incl. supabase/client.ts, supabase/server.ts and the offline write queue
   types/          shared types
 ```
