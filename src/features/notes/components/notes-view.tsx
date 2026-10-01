@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { Archive, Inbox } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
+import { SkeletonRows } from "@/components/layout/skeleton-rows";
 import { AnimatedList, AnimatedListItem } from "@/components/motion/animated-list";
 import { AddGoalSheet } from "@/features/goals/components/add-goal-sheet";
 import { useGoals } from "@/features/goals/use-goals";
 import { useTasks } from "@/features/planning/tasks-context";
 import { useTodayKey } from "@/hooks/use-today";
 import { toDateKey } from "@/lib/date";
+import { useCachedState } from "@/lib/screen-cache";
 import { createClient } from "@/lib/supabase/client";
 import type { Note } from "../types";
 import { NoteOptionsSheet } from "./note-options-sheet";
@@ -47,8 +49,8 @@ export function NotesView({ shared, focus }: NotesViewProps) {
   const todayKey = useTodayKey();
   const { add: addTask } = useTasks();
   const { add: addGoal } = useGoals();
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [notes, setNotes, cached] = useCachedState<Note[]>("notes", []);
+  const [loaded, setLoaded] = useState(cached);
   const [showArchive, setShowArchive] = useState(false);
   const [selected, setSelected] = useState<Note | null>(null);
   const [goalFrom, setGoalFrom] = useState<Note | null>(null);
@@ -58,7 +60,7 @@ export function NotesView({ shared, focus }: NotesViewProps) {
     if (window.location.search) window.history.replaceState(null, "", "/notes");
     setNotes(await fetchNotes());
     setLoaded(true);
-  }, []);
+  }, [setNotes]);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,7 +73,7 @@ export function NotesView({ shared, focus }: NotesViewProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [setNotes]);
 
   const inbox = notes.filter((n) => !n.archived_at);
   const archive = notes.filter((n) => n.archived_at);
@@ -127,6 +129,7 @@ export function NotesView({ shared, focus }: NotesViewProps) {
         ))}
       </div>
 
+      {!loaded && <SkeletonRows lines={2} />}
       {loaded && shown.length === 0 && (
         <p className="py-4 text-sm text-muted-foreground">
           {showArchive ? "Nothing archived yet." : notes.length ? "Inbox zero. Nicely sorted." : "Nothing captured yet."}

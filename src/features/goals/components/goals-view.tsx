@@ -5,6 +5,7 @@ import { Briefcase, Dumbbell } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
 import { AnimatedList, AnimatedListItem } from "@/components/motion/animated-list";
 import { PageHeader } from "@/components/layout/page-header";
+import { SkeletonRows } from "@/components/layout/skeleton-rows";
 import { useTasks } from "@/features/planning/tasks-context";
 import { useTodayKey } from "@/hooks/use-today";
 import { addDays, fromDateKey, toDateKey } from "@/lib/date";
@@ -37,6 +38,7 @@ export function GoalsView() {
         action={<AddButton label="New goal" onClick={() => setAdding(true)} />}
       />
 
+      {!loaded && <SkeletonRows lines={2} />}
       {loaded && goals.length === 0 && <p className="py-4 text-sm text-muted-foreground">Add goals with the +.</p>}
 
       {categories.map(({ id, label }) => {

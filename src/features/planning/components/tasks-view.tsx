@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { CalendarDays } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
 import { PageHeader } from "@/components/layout/page-header";
+import { SkeletonRows } from "@/components/layout/skeleton-rows";
 import { useGoals } from "@/features/goals/use-goals";
 import { useTodayKey } from "@/hooks/use-today";
 import { addDays, fromDateKey, isDateKey, startOfMonth, toDateKey } from "@/lib/date";
@@ -100,7 +101,9 @@ export function TasksView() {
           <CalendarDays className="size-3.5" />
           {selected === todayKey ? `Today · ${label}` : label}
         </h2>
-        {!loaded ? null : tasks.length === 0 ? (
+        {!loaded ? (
+          <SkeletonRows />
+        ) : tasks.length === 0 ? (
           <p className="py-4 text-sm text-muted-foreground">Nothing planned. Add a task with the +.</p>
         ) : (
           <FocusList tasks={tasks} onToggle={toggle} onOptions={setOptions} />

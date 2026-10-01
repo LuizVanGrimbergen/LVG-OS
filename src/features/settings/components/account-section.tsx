@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { CircleUserRound, LogOut } from "lucide-react";
+import { useCachedState } from "@/lib/screen-cache";
 import { createClient } from "@/lib/supabase/client";
 
 export function AccountSection() {
-  const [email, setEmail] = useState<string | null>(null);
+  const [email, setEmail] = useCachedState<string | null>("account-email", null);
 
   useEffect(() => {
     let cancelled = false;
@@ -16,7 +17,7 @@ export function AccountSection() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [setEmail]);
 
   const signOut = async () => {
     await createClient().auth.signOut();

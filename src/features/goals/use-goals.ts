@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { celebrate } from "@/lib/celebrate";
+import { useCachedState } from "@/lib/screen-cache";
 import { createClient } from "@/lib/supabase/client";
 import type { Goal } from "./types";
 
 /** Your goals from Supabase, oldest first. */
 export function useGoals() {
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [goals, setGoals, cached] = useCachedState<Goal[]>("goals", []);
+  const [loaded, setLoaded] = useState(cached);
 
   useEffect(() => {
     let cancelled = false;
@@ -25,7 +26,7 @@ export function useGoals() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [setGoals]);
 
   const step = async (id: string) => {
     const goal = goals.find((g) => g.id === id);

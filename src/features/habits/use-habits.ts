@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { addDays, fromDateKey, toDateKey } from "@/lib/date";
+import { useCachedState } from "@/lib/screen-cache";
 import { createClient } from "@/lib/supabase/client";
 import { currentStreak } from "./streaks";
 
@@ -11,10 +12,10 @@ const HISTORY_DAYS = 400;
 
 /** Your habits and the days you did them (last ~year), stored in Supabase. */
 export function useHabits(today: string) {
-  const [habits, setHabits] = useState<Habit[]>([]);
+  const [habits, setHabits, cached] = useCachedState<Habit[]>("habits", []);
   // habitId -> set of "YYYY-MM-DD"
-  const [logs, setLogs] = useState<Map<string, Set<string>>>(() => new Map());
-  const [loaded, setLoaded] = useState(false);
+  const [logs, setLogs] = useCachedState<Map<string, Set<string>>>("habit-logs", new Map());
+  const [loaded, setLoaded] = useState(cached);
 
   useEffect(() => {
     let cancelled = false;
@@ -40,7 +41,7 @@ export function useHabits(today: string) {
     return () => {
       cancelled = true;
     };
-  }, [today]);
+  }, [today, setHabits, setLogs]);
 
   const doneToday = (habitId: string) => logs.get(habitId)?.has(today) ?? false;
 

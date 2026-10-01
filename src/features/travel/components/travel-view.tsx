@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Globe, Map as MapIcon, MapPin, Pencil } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
 import { PageHeader } from "@/components/layout/page-header";
+import { SkeletonRows } from "@/components/layout/skeleton-rows";
+import { useCachedState } from "@/lib/screen-cache";
 import { createClient } from "@/lib/supabase/client";
 import type { Place, WorldMap } from "../types";
 import { useMapView } from "../use-map-view";
@@ -16,13 +18,13 @@ import { VisitedGlobe } from "./visited-globe";
 import { VisitedMap } from "./visited-map";
 
 export function TravelView({ map }: { map: WorldMap }) {
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [markedVisited, setMarkedVisited] = useState<Set<string>>(() => new Set());
-  const [loaded, setLoaded] = useState(false);
+  const [places, setPlaces, cached] = useCachedState<Place[]>("places", []);
+  const [markedVisited, setMarkedVisited] = useCachedState<Set<string>>("visited-countries", new Set());
+  const [loaded, setLoaded] = useState(cached);
   const [adding, setAdding] = useState(false);
   const [marking, setMarking] = useState(false);
   const [selected, setSelected] = useState<Place | null>(null);
-  const [photoCounts, setPhotoCounts] = useState<Map<string, number>>(() => new Map());
+  const [photoCounts, setPhotoCounts] = useCachedState<Map<string, number>>("place-photo-counts", new Map());
   const [view, setView] = useMapView();
 
   // A country counts as visited when ticked off by hand or when a place in it is listed.
@@ -59,7 +61,7 @@ export function TravelView({ map }: { map: WorldMap }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [setPlaces, setMarkedVisited, setPhotoCounts]);
 
   const toggleCountry = async (id: string) => {
     if (fromPlaces.has(id)) return;
@@ -154,6 +156,7 @@ export function TravelView({ map }: { map: WorldMap }) {
           <MapPin className="size-3.5" />
           Places
         </h2>
+        {!loaded && <SkeletonRows />}
         {loaded && (
           <PlaceList
             places={sortedPlaces}

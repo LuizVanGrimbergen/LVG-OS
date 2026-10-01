@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { fromDateKey } from "@/lib/date";
 import { cn } from "@/lib/utils";
+import { useCachedState } from "@/lib/screen-cache";
 import { createClient } from "@/lib/supabase/client";
 import { REVIEW_HEADINGS } from "../prompt";
 
@@ -33,11 +34,11 @@ function ReviewText({ content }: { content: string }) {
 }
 
 export function CoachView() {
-  const [review, setReview] = useState<Review | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const [review, setReview, cached] = useCachedState<Review | null>("coach-review", null);
+  const [loaded, setLoaded] = useState(cached);
   const [writing, setWriting] = useState(false);
   const [error, setError] = useState("");
-  const [chat, setChat] = useState<ChatMessage[]>([]);
+  const [chat, setChat] = useCachedState<ChatMessage[]>("coach-chat", []);
   const [draft, setDraft] = useState("");
   const [replying, setReplying] = useState(false);
   const [chatError, setChatError] = useState("");
@@ -59,7 +60,7 @@ export function CoachView() {
     return () => {
       cancelled = true;
     };
-  }, [weekStart]);
+  }, [weekStart, setChat]);
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +106,7 @@ export function CoachView() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [setReview]);
 
   const write = async () => {
     setWriting(true);

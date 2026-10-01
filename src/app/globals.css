@@ -124,8 +124,13 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* No double-tap zoom delay on taps. */
+    touch-action: manipulation;
   }
   html {
     @apply font-sans;
+    /* Feel like an app: no grey flash on tap, no rubber-banding of the whole page. */
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
   }
 }

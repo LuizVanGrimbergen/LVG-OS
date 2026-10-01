@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { BarChart3, Lightbulb } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
@@ -8,6 +8,7 @@ import { useHabits } from "@/features/habits/use-habits";
 import { MIN_DAYS_FOR_PATTERN, habitMoodPatterns, type MoodDay } from "@/features/reflection/mood";
 import { useTodayKey } from "@/hooks/use-today";
 import { addDays, fromDateKey, toDateKey } from "@/lib/date";
+import { useCachedState } from "@/lib/screen-cache";
 import { createClient } from "@/lib/supabase/client";
 import { HabitHeatmap } from "./habit-heatmap";
 import { MoodChart } from "./mood-chart";
@@ -26,7 +27,7 @@ export function InsightsView() {
 
 function Insights({ today }: { today: string }) {
   const { habits, logs, loaded } = useHabits(today);
-  const [moods, setMoods] = useState<MoodDay[]>([]);
+  const [moods, setMoods] = useCachedState<MoodDay[]>("moods", []);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,7 +46,7 @@ function Insights({ today }: { today: string }) {
     return () => {
       cancelled = true;
     };
-  }, [today]);
+  }, [today, setMoods]);
 
   const patterns = habitMoodPatterns(moods, logs).filter((p) => Math.abs(p.difference) >= 0.3);
   const habitName = (id: string) => habits.find((h) => h.id === id)?.name ?? "";
@@ -88,6 +89,7 @@ function Insights({ today }: { today: string }) {
           <BarChart3 className="size-3.5" />
           Habits · last 26 weeks
         </p>
+        {!loaded && <div className="h-40 animate-pulse rounded-2xl bg-card" />}
         {loaded && habits.length === 0 && (
           <p className="px-1 text-sm text-muted-foreground">Add a daily habit on Home to see it here.</p>
         )}

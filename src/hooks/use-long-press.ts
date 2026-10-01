@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { haptic } from "@/lib/haptics";
 
 const HOLD_MS = 500;
 const MOVE_TOLERANCE_PX = 10;
@@ -26,6 +27,7 @@ export function useLongPress(onLongPress: () => void, onTap: () => void) {
       clear();
       timer.current = setTimeout(() => {
         fired.current = true;
+        haptic("hold");
         onLongPress();
       }, HOLD_MS);
     },
@@ -46,6 +48,7 @@ export function useLongPress(onLongPress: () => void, onTap: () => void) {
         fired.current = false;
         return;
       }
+      haptic();
       onTap();
     },
     onContextMenu: (e: React.MouseEvent) => {

@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useCachedState } from "@/lib/screen-cache";
 import { createClient } from "@/lib/supabase/client";
 import type { SmokingCost } from "./savings";
 
 /** Your first smoke-free day ("YYYY-MM-DD") and what smoking cost, stored in the settings table. */
 export function useSmokeFreeSince() {
-  const [since, setSinceState] = useState<string | null>(null);
-  const [cost, setCostState] = useState<SmokingCost | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const [since, setSinceState, cached] = useCachedState<string | null>("smoke-free-since", null);
+  const [cost, setCostState] = useCachedState<SmokingCost | null>("smoking-cost", null);
+  const [loaded, setLoaded] = useState(cached);
 
   useEffect(() => {
     let cancelled = false;
@@ -32,7 +33,7 @@ export function useSmokeFreeSince() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [setSinceState, setCostState]);
 
   const setSince = async (day: string) => {
     const before = since;
