@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { addDays, fromDateKey, toDateKey } from "@/lib/date";
 import { createClient } from "@/lib/supabase/client";
+import { currentStreak } from "./streaks";
 
 export type Habit = { id: string; name: string; icon: string; created_at: string };
 
@@ -44,18 +45,7 @@ export function useHabits(today: string) {
   const doneToday = (habitId: string) => logs.get(habitId)?.has(today) ?? false;
 
   /** Days in a row, counting from today if done, otherwise from yesterday. */
-  const streak = (habitId: string) => {
-    const days = logs.get(habitId);
-    if (!days) return 0;
-    let d = fromDateKey(today);
-    if (!days.has(today)) d = addDays(d, -1);
-    let count = 0;
-    while (days.has(toDateKey(d))) {
-      count++;
-      d = addDays(d, -1);
-    }
-    return count;
-  };
+  const streak = (habitId: string) => currentStreak(logs.get(habitId) ?? new Set(), today);
 
   const setLogged = (habitId: string, on: boolean) =>
     setLogs((prev) => {
@@ -104,5 +94,5 @@ export function useHabits(today: string) {
     }
   };
 
-  return { habits, loaded, doneToday, streak, toggleToday, add, remove };
+  return { habits, logs, loaded, doneToday, streak, toggleToday, add, remove };
 }

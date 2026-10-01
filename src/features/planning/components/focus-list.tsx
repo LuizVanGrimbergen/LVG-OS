@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Check, Repeat } from "lucide-react";
+import { Check, Repeat, Target } from "lucide-react";
 import { AnimatedList, AnimatedListItem } from "@/components/motion/animated-list";
 import { useLongPress } from "@/hooks/use-long-press";
 import { cn } from "@/lib/utils";
@@ -56,6 +56,7 @@ function TaskRow({ task, onToggle, onOptions }: { task: Task } & Omit<FocusListP
       <span className={cn("flex-1 transition-colors", task.done && "text-muted-foreground line-through")}>
         {task.title}
       </span>
+      {task.goal_id && <Target className="size-3.5 shrink-0 text-muted-foreground" aria-label="Counts towards a goal" />}
       {task.recurring_id && <Repeat className="size-3.5 shrink-0 text-muted-foreground" aria-label="Repeats" />}
     </button>
   );

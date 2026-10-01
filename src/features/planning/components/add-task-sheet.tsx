@@ -12,8 +12,10 @@ type AddTaskSheetProps = {
   title: string;
   /** The day the task is added to ("YYYY-MM-DD"); also where a repeat starts. */
   day: string;
+  /** Unfinished goals the task can count towards. */
+  goals: { id: string; title: string }[];
   onClose: () => void;
-  onAdd: (title: string, repeat: Repeat) => void;
+  onAdd: (title: string, repeat: Repeat, goalId: string | null) => void;
 };
 
 type Mode = "once" | "weekly" | "monthly";
@@ -32,13 +34,14 @@ const chip = (active: boolean) =>
     active ? "border-foreground bg-foreground text-background" : "border-input text-muted-foreground",
   );
 
-export function AddTaskSheet({ open, title: sheetTitle, day, onClose, onAdd }: AddTaskSheetProps) {
+export function AddTaskSheet({ open, title: sheetTitle, day, goals, onClose, onAdd }: AddTaskSheetProps) {
   const date = fromDateKey(day);
   const isoWeekday = ((date.getDay() + 6) % 7) + 1;
 
   const [title, setTitle] = useState("");
   const [mode, setMode] = useState<Mode>("once");
   const [weekdays, setWeekdays] = useState<number[]>([isoWeekday]);
+  const [goalId, setGoalId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   const toggleWeekday = (d: number) =>
@@ -55,10 +58,11 @@ export function AddTaskSheet({ open, title: sheetTitle, day, onClose, onAdd }: A
         : mode === "monthly"
           ? { kind: "monthly", monthDay: date.getDate() }
           : null;
-    onAdd(title.trim(), repeat);
+    onAdd(title.trim(), repeat, goalId);
     setTitle("");
     setMode("once");
     setWeekdays([isoWeekday]);
+    setGoalId(null);
     setError("");
     onClose();
   };
@@ -126,6 +130,26 @@ export function AddTaskSheet({ open, title: sheetTitle, day, onClose, onAdd }: A
           <p className="text-sm text-muted-foreground">Every month on the {ordinal(date.getDate())}.</p>
         )}
       </div>
+
+      {goals.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">Counts towards a goal</p>
+          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1" role="radiogroup" aria-label="Goal">
+            {goals.map((g) => (
+              <button
+                key={g.id}
+                type="button"
+                role="radio"
+                aria-checked={goalId === g.id}
+                onClick={() => setGoalId(goalId === g.id ? null : g.id)}
+                className={cn(chip(goalId === g.id), "max-w-[14rem] shrink-0 truncate")}
+              >
+                {g.title}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 

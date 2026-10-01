@@ -9,6 +9,8 @@ export type Task = {
   recurring_id: string | null;
   /** A skipped recurring task stays hidden instead of being created again. */
   skipped: boolean;
+  /** The goal that ticking this task moves forward. */
+  goal_id: string | null;
 };
 
 export type RecurringRule = {
@@ -20,6 +22,7 @@ export type RecurringRule = {
   month_day: number | null;
   /** First day it applies, "YYYY-MM-DD". */
   start_date: string;
+  goal_id: string | null;
 };
 
 /** How a new task repeats: not at all, on weekdays, or monthly on a day. */

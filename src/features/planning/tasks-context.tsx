@@ -2,6 +2,7 @@
 
 import { createContext, use, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTodayKey } from "@/hooks/use-today";
+import { celebrateOnce } from "@/lib/celebrate";
 import { addDays, fromDateKey, toDateKey } from "@/lib/date";
 import { createClient } from "@/lib/supabase/client";
 import { occurrenceId, occurrences } from "./recurrence";
@@ -19,8 +20,8 @@ type TasksContextValue = {
   overdue: Task[];
   moveOverdueToToday: () => void;
   toggle: (id: string) => void;
-  add: (title: string, day: string) => void;
-  addRecurring: (title: string, repeat: NonNullable<Repeat>, startDay: string) => void;
+  add: (title: string, day: string, goalId?: string | null) => void;
+  addRecurring: (title: string, repeat: NonNullable<Repeat>, startDay: string, goalId?: string | null) => void;
   /** Stop a rule: its upcoming unfinished tasks go away, past ones stay. */
   stopRepeating: (ruleId: string) => void;
   move: (id: string, day: string) => void;
@@ -29,7 +30,7 @@ type TasksContextValue = {
 
 const TasksContext = createContext<TasksContextValue | null>(null);
 
-const TASK_COLUMNS = "id, title, done, day, created_at, recurring_id, skipped";
+const TASK_COLUMNS = "id, title, done, day, created_at, recurring_id, skipped, goal_id";
 const OVERDUE_LOOKBACK_DAYS = 14;
 const rangeKey = (from: string, to: string) => `${from}|${to}`;
 
@@ -48,7 +49,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     rules.current ??= (async () => {
       const { data, error } = await createClient()
         .from("recurring_tasks")
-        .select("id, title, kind, weekdays, month_day, start_date");
+        .select("id, title, kind, weekdays, month_day, start_date, goal_id");
       if (error) console.error("Loading recurring tasks failed", error);
       return (data ?? []) as RecurringRule[];
     })();
@@ -73,6 +74,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
           created_at: `${rule.start_date}T00:00:00.000Z`,
           recurring_id: rule.id,
           skipped: false,
+          goal_id: rule.goal_id,
         });
       }
     }
@@ -170,9 +172,15 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const toggle = (id: string) => {
+  const toggle = async (id: string) => {
     const task = tasks.find((t) => t.id === id);
-    if (task) void update(id, { done: !task.done });
+    if (!task) return;
+    await update(id, { done: !task.done });
+    // The database moves the linked goal forward; confetti when that finished it.
+    if (task.goal_id && !task.done) {
+      const { data } = await createClient().from("goals").select("current, target").eq("id", task.goal_id).maybeSingle();
+      if (data && data.current >= data.target) celebrateOnce(`goal:${task.goal_id}`);
+    }
   };
 
   const move = (id: string, day: string) => void update(id, { day });
@@ -190,7 +198,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const add = async (title: string, day: string) => {
+  const add = async (title: string, day: string, goalId: string | null = null) => {
     const task: Task = {
       id: crypto.randomUUID(),
       title,
@@ -199,6 +207,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       created_at: new Date().toISOString(),
       recurring_id: null,
       skipped: false,
+      goal_id: goalId,
     };
     setTasks((prev) => [...prev, task]);
 
@@ -209,7 +218,12 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addRecurring = async (title: string, repeat: NonNullable<Repeat>, startDay: string) => {
+  const addRecurring = async (
+    title: string,
+    repeat: NonNullable<Repeat>,
+    startDay: string,
+    goalId: string | null = null,
+  ) => {
     const rule: RecurringRule = {
       id: crypto.randomUUID(),
       title,
@@ -217,6 +231,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       weekdays: repeat.kind === "weekly" ? repeat.weekdays : [],
       month_day: repeat.kind === "monthly" ? repeat.monthDay : null,
       start_date: startDay,
+      goal_id: goalId,
     };
     const { error } = await createClient().from("recurring_tasks").insert(rule);
     if (error) return console.error("Adding recurring task failed", error);

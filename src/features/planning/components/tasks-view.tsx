@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { CalendarDays } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
 import { PageHeader } from "@/components/layout/page-header";
+import { useGoals } from "@/features/goals/use-goals";
 import { useTodayKey } from "@/hooks/use-today";
 import { addDays, fromDateKey, isDateKey, startOfMonth, toDateKey } from "@/lib/date";
 import { useTasks } from "../tasks-context";
@@ -40,6 +41,8 @@ export function TasksView() {
   const dayParam = useSearchParams().get("day");
   const { tasksOn, isDayCompleted, ensureRange, isLoaded, toggle, add, addRecurring, stopRepeating, move, remove } =
     useTasks();
+  const { goals } = useGoals();
+  const openGoals = goals.filter((g) => g.current < g.target);
 
   // Selected day: from the link (?day=…) or today. Shown month: follows the selection until you page.
   const [pickedDay, setPickedDay] = useState<string | null>(isDateKey(dayParam) ? dayParam : null);
@@ -114,9 +117,12 @@ export function TasksView() {
         key={selected}
         open={adding}
         day={selected}
+        goals={openGoals}
         title={selected === todayKey ? "New task" : `New task · ${label}`}
         onClose={() => setAdding(false)}
-        onAdd={(title, repeat) => (repeat ? addRecurring(title, repeat, selected) : add(title, selected))}
+        onAdd={(title, repeat, goalId) =>
+          repeat ? addRecurring(title, repeat, selected, goalId) : add(title, selected, goalId)
+        }
       />
     </div>
   );

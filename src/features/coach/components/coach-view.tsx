@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { ArrowUp, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { fromDateKey } from "@/lib/date";
+import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { REVIEW_HEADINGS } from "../prompt";
 
 type Review = { week_start: string; content: string };
+type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const weekLabel = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long" });
 const HEADINGS = new Set<string>(REVIEW_HEADINGS);
@@ -35,6 +37,56 @@ export function CoachView() {
   const [loaded, setLoaded] = useState(false);
   const [writing, setWriting] = useState(false);
   const [error, setError] = useState("");
+  const [chat, setChat] = useState<ChatMessage[]>([]);
+  const [draft, setDraft] = useState("");
+  const [replying, setReplying] = useState(false);
+  const [chatError, setChatError] = useState("");
+
+  const weekStart = review?.week_start;
+  useEffect(() => {
+    if (!weekStart) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await createClient()
+        .from("coach_messages")
+        .select("role, content")
+        .eq("week_start", weekStart)
+        .order("created_at");
+      if (cancelled) return;
+      if (error) console.error("Loading chat failed", error);
+      setChat((data as ChatMessage[] | null) ?? []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [weekStart]);
+
+  const send = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const message = draft.trim();
+    if (!message || !review) return;
+    setChat((prev) => [...prev, { role: "user", content: message }]);
+    setDraft("");
+    setReplying(true);
+    setChatError("");
+    try {
+      const res = await fetch("/api/coach/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ weekStart: review.week_start, message }),
+      });
+      const body = (await res.json()) as { answer?: string; error?: string };
+      if (!res.ok || !body.answer) throw new Error(body.error ?? "Something went wrong.");
+      setChat((prev) => [...prev, { role: "assistant", content: body.answer! }]);
+    } catch (e) {
+      // Put the message back so it isn't lost.
+      setChat((prev) => prev.slice(0, -1));
+      setDraft(message);
+      setChatError(e instanceof Error ? e.message : "Something went wrong.");
+    } finally {
+      setReplying(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -63,6 +115,7 @@ export function CoachView() {
       const body = (await res.json()) as { weekStart?: string; content?: string; error?: string };
       if (!res.ok || !body.content || !body.weekStart) throw new Error(body.error ?? "Something went wrong.");
       setReview({ week_start: body.weekStart, content: body.content });
+      setChat([]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
@@ -107,9 +160,46 @@ export function CoachView() {
         </Button>
       </section>
 
+      {review && !writing && (
+        <section className="space-y-3">
+          {chat.map((m, i) => (
+            <p
+              key={i}
+              className={cn(
+                "max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed whitespace-pre-wrap",
+                m.role === "user" ? "ml-auto bg-foreground text-background" : "bg-card",
+              )}
+            >
+              {m.content}
+            </p>
+          ))}
+          {replying && <p className="w-fit animate-pulse rounded-2xl bg-card px-4 py-3 text-[15px] text-muted-foreground">…</p>}
+          {chatError && <p className="text-sm text-destructive">{chatError}</p>}
+
+          <form onSubmit={send} className="flex items-center gap-2">
+            <input
+              value={draft}
+              maxLength={1000}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder={chat.length ? "Reply…" : "Ask your coach about this week…"}
+              aria-label="Message your coach"
+              className="h-11 min-w-0 flex-1 rounded-xl border border-input bg-transparent px-3 text-base outline-none focus:border-ring"
+            />
+            <button
+              type="submit"
+              aria-label="Send"
+              disabled={!draft.trim() || replying}
+              className="flex size-11 shrink-0 items-center justify-center rounded-full bg-foreground text-background transition-opacity disabled:opacity-30"
+            >
+              <ArrowUp className="size-5" />
+            </button>
+          </form>
+        </section>
+      )}
+
       <p className="px-1 text-xs text-muted-foreground">
-        Written by Claude from your tasks, goals, check-ins and smoke-free streak of the last 7 days. That data is sent
-        to Anthropic to write the review.
+        Written by Claude from your tasks, goals, habits, check-ins, mood, quick notes and smoke-free streak of the last
+        7 days. That data is sent to Anthropic to write the review and answer you.
       </p>
     </div>
   );
