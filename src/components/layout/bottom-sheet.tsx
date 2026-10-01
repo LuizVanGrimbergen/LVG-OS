@@ -29,7 +29,7 @@ export function BottomSheet({ open, title, onClose, onSubmit, children }: Bottom
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="fixed inset-x-0 bottom-0 z-110 mx-auto max-w-md space-y-5 rounded-t-3xl border-t border-border bg-card px-4 pt-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
+            className="fixed inset-x-0 bottom-0 z-110 mx-auto max-h-[90dvh] max-w-md space-y-5 overflow-y-auto rounded-t-3xl border-t border-border bg-card px-4 pt-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
