@@ -3,14 +3,15 @@
 import { useEffect, useState } from "react";
 import { Globe, Map as MapIcon, MapPin, Pencil } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
-import { DeleteSheet } from "@/components/layout/delete-sheet";
 import { PageHeader } from "@/components/layout/page-header";
 import { createClient } from "@/lib/supabase/client";
 import type { Place, WorldMap } from "../types";
 import { useMapView } from "../use-map-view";
+import { removePlacePhotoFiles } from "../use-place-photos";
 import { AddPlaceSheet } from "./add-place-sheet";
 import { MarkVisitedSheet } from "./mark-visited-sheet";
 import { PlaceList } from "./place-list";
+import { PlaceSheet } from "./place-sheet";
 import { VisitedGlobe } from "./visited-globe";
 import { VisitedMap } from "./visited-map";
 
@@ -21,6 +22,7 @@ export function TravelView({ map }: { map: WorldMap }) {
   const [adding, setAdding] = useState(false);
   const [marking, setMarking] = useState(false);
   const [selected, setSelected] = useState<Place | null>(null);
+  const [photoCounts, setPhotoCounts] = useState<Map<string, number>>(() => new Map());
   const [view, setView] = useMapView();
 
   // A country counts as visited when ticked off by hand or when a place in it is listed.
@@ -39,15 +41,19 @@ export function TravelView({ map }: { map: WorldMap }) {
     let cancelled = false;
     (async () => {
       const supabase = createClient();
-      const [placesRes, countriesRes] = await Promise.all([
+      const [placesRes, countriesRes, photosRes] = await Promise.all([
         supabase.from("places").select("id, name, country_id").order("created_at"),
         supabase.from("visited_countries").select("country_id"),
+        supabase.from("place_photos").select("place_id"),
       ]);
       if (cancelled) return;
       if (placesRes.error) console.error("Loading places failed", placesRes.error);
       if (countriesRes.error) console.error("Loading countries failed", countriesRes.error);
       setPlaces((placesRes.data ?? []).map((p) => ({ id: p.id, name: p.name, countryId: p.country_id })));
       setMarkedVisited(new Set((countriesRes.data ?? []).map((c) => c.country_id)));
+      const counts = new Map<string, number>();
+      for (const { place_id } of photosRes.data ?? []) counts.set(place_id, (counts.get(place_id) ?? 0) + 1);
+      setPhotoCounts(counts);
       setLoaded(true);
     })();
     return () => {
@@ -75,7 +81,12 @@ export function TravelView({ map }: { map: WorldMap }) {
     }
   };
 
+  const changePhotoCount = (placeId: string, delta: number) =>
+    setPhotoCounts((prev) => new Map(prev).set(placeId, Math.max(0, (prev.get(placeId) ?? 0) + delta)));
+
   const removePlace = async (id: string) => {
+    // The photo rows go with the place; the files in storage have to be removed first.
+    await removePlacePhotoFiles(id);
     const before = places;
     setPlaces((prev) => prev.filter((p) => p.id !== id));
 
@@ -143,7 +154,14 @@ export function TravelView({ map }: { map: WorldMap }) {
           <MapPin className="size-3.5" />
           Places
         </h2>
-        {loaded && <PlaceList places={sortedPlaces} countryName={countryName} onOptions={setSelected} />}
+        {loaded && (
+          <PlaceList
+            places={sortedPlaces}
+            countryName={countryName}
+            photoCount={(id) => photoCounts.get(id) ?? 0}
+            onOpen={setSelected}
+          />
+        )}
       </section>
 
       <MarkVisitedSheet
@@ -154,9 +172,10 @@ export function TravelView({ map }: { map: WorldMap }) {
         onToggle={toggleCountry}
         onClose={() => setMarking(false)}
       />
-      <DeleteSheet
-        item={selected && { id: selected.id, title: selected.name }}
-        label="Delete place"
+      <PlaceSheet
+        place={selected}
+        country={selected ? countryName(selected.countryId) : ""}
+        onPhotoCountChange={changePhotoCount}
         onDelete={removePlace}
         onClose={() => setSelected(null)}
       />
