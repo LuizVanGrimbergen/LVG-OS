@@ -10,7 +10,14 @@ import { MAX_NOTE_LENGTH } from "../types";
  * One field: type a thought, tap ↑, and it's saved to Notes.
  * On Home it shows a link to Notes after saving; on Notes it calls `onSaved` to refresh the list.
  */
-export function QuickCapture({ onSaved, initialBody = "" }: { onSaved?: () => void; initialBody?: string }) {
+type QuickCaptureProps = {
+  onSaved?: () => void;
+  /** Prefilled text, e.g. shared from another app. */
+  initialBody?: string;
+  autoFocus?: boolean;
+};
+
+export function QuickCapture({ onSaved, initialBody = "", autoFocus = false }: QuickCaptureProps) {
   const [body, setBody] = useState(initialBody.slice(0, MAX_NOTE_LENGTH));
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
@@ -42,7 +49,7 @@ export function QuickCapture({ onSaved, initialBody = "" }: { onSaved?: () => vo
               setBody(e.target.value);
               if (status !== "saving") setStatus("idle");
             }}
-            autoFocus={!!initialBody}
+            autoFocus={autoFocus || !!initialBody}
             placeholder="Capture a thought…"
             aria-label="Capture a thought"
             className="h-11 w-full rounded-xl border border-input bg-transparent pr-3 pl-9 text-base outline-none focus:border-ring"

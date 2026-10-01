@@ -38,10 +38,12 @@ async function fetchNotes(): Promise<Note[]> {
 type NotesViewProps = {
   /** Text shared from another app, to prefill the capture field. */
   shared?: string;
+  /** Focus the capture field (the "Quick note" app shortcut). */
+  focus?: boolean;
 };
 
 /** Captured notes: an inbox to sort into tasks or goals, and an archive. */
-export function NotesView({ shared }: NotesViewProps) {
+export function NotesView({ shared, focus }: NotesViewProps) {
   const todayKey = useTodayKey();
   const { add: addTask } = useTasks();
   const { add: addGoal } = useGoals();
@@ -52,6 +54,8 @@ export function NotesView({ shared }: NotesViewProps) {
   const [goalFrom, setGoalFrom] = useState<Note | null>(null);
 
   const refresh = useCallback(async () => {
+    // Saved: drop shared text from the address, so reloading doesn't fill it in again.
+    if (window.location.search) window.history.replaceState(null, "", "/notes");
     setNotes(await fetchNotes());
     setLoaded(true);
   }, []);
@@ -102,7 +106,7 @@ export function NotesView({ shared }: NotesViewProps) {
   return (
     <div className="space-y-4">
       <PageHeader title="Notes" />
-      <QuickCapture key={shared} initialBody={shared} onSaved={refresh} />
+      <QuickCapture key={shared} initialBody={shared} autoFocus={focus} onSaved={refresh} />
 
       <div className="flex gap-4 px-1 text-xs" role="tablist">
         {[

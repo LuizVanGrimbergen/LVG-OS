@@ -38,7 +38,8 @@ function writeCollapsed(collapsed: boolean) {
 
 export function TasksView() {
   const todayKey = useTodayKey();
-  const dayParam = useSearchParams().get("day");
+  const searchParams = useSearchParams();
+  const dayParam = searchParams.get("day");
   const { tasksOn, isDayCompleted, ensureRange, isLoaded, toggle, add, addRecurring, stopRepeating, move, remove } =
     useTasks();
   const { goals } = useGoals();
@@ -48,7 +49,8 @@ export function TasksView() {
   const [pickedDay, setPickedDay] = useState<string | null>(isDateKey(dayParam) ? dayParam : null);
   const [monthOffset, setMonthOffset] = useState(0);
   const [collapsed, setCollapsed] = useState(readCollapsed);
-  const [adding, setAdding] = useState(false);
+  // ?new=1 (the "New task" app shortcut) opens the add sheet straight away.
+  const [adding, setAdding] = useState(searchParams.get("new") === "1");
   const [options, setOptions] = useState<Task | null>(null);
 
   const selected = pickedDay ?? todayKey;
