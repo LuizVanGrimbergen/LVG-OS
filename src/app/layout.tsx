@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SerwistProvider } from "@serwist/turbopack/react";
 import { AppMenu } from "@/components/layout/app-menu";
+import { OfflineSync } from "@/features/offline/components/offline-sync";
 import { MotionProvider } from "@/components/motion/motion-provider";
 import { TasksProvider } from "@/features/planning/tasks-context";
 import { ReflectionProvider } from "@/features/reflection/reflection-context";
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </ReflectionProvider>
             </TasksProvider>
             <AppMenu />
+            <OfflineSync />
           </MotionProvider>
         </SerwistProvider>
       </body>
