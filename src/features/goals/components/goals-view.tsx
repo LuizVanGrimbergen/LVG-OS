@@ -3,33 +3,22 @@
 import { useState } from "react";
 import { Briefcase, Dumbbell } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
+import { DeleteSheet } from "@/components/layout/delete-sheet";
 import { AnimatedList, AnimatedListItem } from "@/components/motion/animated-list";
 import { PageHeader } from "@/components/layout/page-header";
 import { SkeletonRows } from "@/components/layout/skeleton-rows";
-import { useTasks } from "@/features/planning/tasks-context";
-import { useTodayKey } from "@/hooks/use-today";
-import { addDays, fromDateKey, toDateKey } from "@/lib/date";
 import { categories } from "../categories";
 import type { Goal } from "../types";
 import { useGoals } from "../use-goals";
 import { AddGoalSheet } from "./add-goal-sheet";
-import { GoalOptionsSheet } from "./goal-options-sheet";
 import { GoalRow } from "./goal-row";
 
 const categoryIcons = { sport: Dumbbell, work: Briefcase };
 
 export function GoalsView() {
-  const todayKey = useTodayKey();
-  const { add: addTask } = useTasks();
   const { goals, loaded, step, remove, add } = useGoals();
   const [adding, setAdding] = useState(false);
   const [selected, setSelected] = useState<Goal | null>(null);
-
-  /** One task per day from today, each counting towards the goal. */
-  const addSteps = (goal: Goal, steps: string[]) => {
-    if (!todayKey) return;
-    steps.forEach((title, i) => addTask(title, toDateKey(addDays(fromDateKey(todayKey), i)), goal.id));
-  };
 
   return (
     <div className="space-y-6">
@@ -62,7 +51,12 @@ export function GoalsView() {
         );
       })}
 
-      <GoalOptionsSheet goal={selected} onAddSteps={addSteps} onDelete={remove} onClose={() => setSelected(null)} />
+      <DeleteSheet
+        item={selected && { id: selected.id, title: selected.title }}
+        label="Delete goal"
+        onDelete={remove}
+        onClose={() => setSelected(null)}
+      />
       <AddGoalSheet open={adding} onClose={() => setAdding(false)} onAdd={add} />
     </div>
   );

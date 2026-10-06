@@ -4,17 +4,6 @@
 -- Every row belongs to the signed-in user (user_id defaults to auth.uid()),
 -- and row level security makes sure you can only ever see your own rows.
 
--- Tasks, one list per day
-create table public.tasks (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
-  day date not null,
-  title text not null check (char_length(title) between 1 and 200),
-  done boolean not null default false,
-  created_at timestamptz not null default now()
-);
-create index tasks_user_day_idx on public.tasks (user_id, day);
-
 -- Goals with a count or percentage
 create table public.goals (
   id uuid primary key default gen_random_uuid(),
@@ -48,7 +37,7 @@ do $$
 declare
   t text;
 begin
-  foreach t in array array['tasks', 'goals', 'daily_notes', 'settings'] loop
+  foreach t in array array['goals', 'daily_notes', 'settings'] loop
     execute format('alter table public.%I enable row level security', t);
 
     execute format(

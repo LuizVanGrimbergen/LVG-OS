@@ -199,7 +199,7 @@ export function CoachView() {
       )}
 
       <p className="px-1 text-xs text-muted-foreground">
-        Written by Claude from your tasks, goals, habits, check-ins, mood, quick notes and smoke-free streak of the last
+        Written by Claude from your goals, habits, runs, check-ins, mood, quick notes and smoke-free streak of the last
         7 days. That data is sent to Anthropic to write the review and answer you.
       </p>
     </div>

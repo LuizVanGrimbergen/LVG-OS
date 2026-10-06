@@ -4,7 +4,6 @@ import { SerwistProvider } from "@serwist/turbopack/react";
 import { AppMenu } from "@/components/layout/app-menu";
 import { OfflineSync } from "@/features/offline/components/offline-sync";
 import { MotionProvider } from "@/components/motion/motion-provider";
-import { TasksProvider } from "@/features/planning/tasks-context";
 import { ReflectionProvider } from "@/features/reflection/reflection-context";
 import "./globals.css";
 
@@ -20,7 +19,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "LVG OS",
-  description: "Personal planning, goals and growth.",
+  description: "Personal goals, habits and growth.",
   appleWebApp: {
     capable: true,
     title: "LVG OS",
@@ -47,13 +46,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           disable={process.env.NODE_ENV === "development"}
         >
           <MotionProvider>
-            <TasksProvider>
-              <ReflectionProvider>
-                <main className="mx-auto max-w-md px-4 pb-[calc(env(safe-area-inset-bottom)+5rem)]">
-                  {children}
-                </main>
-              </ReflectionProvider>
-            </TasksProvider>
+            <ReflectionProvider>
+              <main className="mx-auto max-w-md px-4 pb-[calc(env(safe-area-inset-bottom)+5rem)]">
+                {children}
+              </main>
+            </ReflectionProvider>
             <AppMenu />
             <OfflineSync />
           </MotionProvider>

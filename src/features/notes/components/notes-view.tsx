@@ -7,7 +7,6 @@ import { SkeletonRows } from "@/components/layout/skeleton-rows";
 import { AnimatedList, AnimatedListItem } from "@/components/motion/animated-list";
 import { AddGoalSheet } from "@/features/goals/components/add-goal-sheet";
 import { useGoals } from "@/features/goals/use-goals";
-import { useTasks } from "@/features/planning/tasks-context";
 import { useTodayKey } from "@/hooks/use-today";
 import { toDateKey } from "@/lib/date";
 import { useCachedState } from "@/lib/screen-cache";
@@ -48,10 +47,9 @@ type NotesViewProps = {
   focus?: boolean;
 };
 
-/** Captured notes: an inbox to sort into tasks or goals, and an archive. */
+/** Captured notes: an inbox to sort into goals, and an archive. */
 export function NotesView({ shared, focus }: NotesViewProps) {
   const todayKey = useTodayKey();
-  const { add: addTask } = useTasks();
   const { add: addGoal } = useGoals();
   const [notes, setNotes, cached] = useCachedState<Note[]>("notes", []);
   const [loaded, setLoaded] = useState(cached);
@@ -105,12 +103,6 @@ export function NotesView({ shared, focus }: NotesViewProps) {
     }
   };
 
-  // A sorted note moves to the archive, so you can still find what it said.
-  const makeTask = (note: Note, day: string) => {
-    addTask(shorten(note.body), day);
-    void setArchived(note, true);
-  };
-
   return (
     <div className="space-y-4">
       <PageHeader title="Notes" />
@@ -152,17 +144,13 @@ export function NotesView({ shared, focus }: NotesViewProps) {
         ))}
       </AnimatedList>
 
-      {todayKey && (
-        <NoteOptionsSheet
-          note={selected}
-          today={todayKey}
-          onMakeTask={makeTask}
-          onMakeGoal={setGoalFrom}
-          onArchive={setArchived}
-          onDelete={remove}
-          onClose={() => setSelected(null)}
-        />
-      )}
+      <NoteOptionsSheet
+        note={selected}
+        onMakeGoal={setGoalFrom}
+        onArchive={setArchived}
+        onDelete={remove}
+        onClose={() => setSelected(null)}
+      />
       <AddGoalSheet
         key={goalFrom?.id ?? "none"}
         open={goalFrom !== null}

@@ -1,31 +1,5 @@
--- LVG OS: recurring tasks and daily habits.
+-- LVG OS: daily habits.
 -- Run once in the Supabase SQL Editor.
-
--- Recurring tasks: a rule that creates a task on the days it applies to.
-create table public.recurring_tasks (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
-  title text not null check (char_length(title) between 1 and 200),
-  kind text not null check (kind in ('weekly', 'monthly')),
-  -- weekly: ISO weekdays, 1 = Monday … 7 = Sunday
-  weekdays smallint[] not null default '{}',
-  -- monthly: day of the month (shorter months use their last day)
-  month_day smallint check (month_day between 1 and 31),
-  start_date date not null,
-  created_at timestamptz not null default now(),
-  check (
-    (kind = 'weekly' and cardinality(weekdays) > 0)
-    or (kind = 'monthly' and month_day is not null)
-  )
-);
-create index recurring_tasks_user_idx on public.recurring_tasks (user_id);
-
--- Tasks created from a rule remember it; skipping one hides it instead of deleting,
--- so it isn't created again.
-alter table public.tasks
-  add column recurring_id uuid references public.recurring_tasks (id) on delete set null,
-  add column skipped boolean not null default false,
-  add constraint tasks_recurring_day_key unique (recurring_id, day);
 
 -- Daily habits and the days you did them.
 create table public.habits (
@@ -50,7 +24,7 @@ do $$
 declare
   t text;
 begin
-  foreach t in array array['recurring_tasks', 'habits', 'habit_logs'] loop
+  foreach t in array array['habits', 'habit_logs'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format(
       'create policy "Own rows: select" on public.%I for select to authenticated using ((select auth.uid()) = user_id)', t);
@@ -64,8 +38,6 @@ begin
 end
 $$;
 
-create policy "Own rows: insert" on public.recurring_tasks for insert to authenticated
-  with check ((select auth.uid()) = user_id);
 create policy "Own rows: insert" on public.habits for insert to authenticated
   with check ((select auth.uid()) = user_id);
 -- A log must belong to you and to one of your own habits.

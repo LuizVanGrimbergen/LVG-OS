@@ -30,8 +30,7 @@ export async function weekContext(supabase: Supabase, today = localToday()): Pro
   const from = toDateKey(addDays(fromDateKey(today), -6));
   const habitsFrom = toDateKey(addDays(fromDateKey(today), -HABIT_HISTORY_DAYS));
 
-  const [tasksRes, goalsRes, dailyRes, settingsRes, habitsRes, logsRes, notesRes, runsRes] = await Promise.all([
-    supabase.from("tasks").select("day, title, done, skipped").gte("day", from).lte("day", today).order("day"),
+  const [goalsRes, dailyRes, settingsRes, habitsRes, logsRes, notesRes, runsRes] = await Promise.all([
     supabase.from("goals").select("title, category, kind, current, target").order("created_at"),
     supabase.from("daily_notes").select("day, intention, reflection, mood").gte("day", from).lte("day", today).order("day"),
     // "*": the quit date is still known when the smoking-cost columns (connected.sql) aren't in the database.
@@ -62,18 +61,6 @@ export async function weekContext(supabase: Supabase, today = localToday()): Pro
       line += `, about ${euros.format(saved)} saved`;
     }
     lines.push(line);
-  }
-
-  lines.push("", "Tasks per day:");
-  const tasks = (tasksRes.data ?? []).filter((t) => !t.skipped);
-  if (tasks.length === 0) lines.push("- none planned");
-  for (let d = fromDateKey(from); toDateKey(d) <= today; d = addDays(d, 1)) {
-    const key = toDateKey(d);
-    const onDay = tasks.filter((t) => t.day === key);
-    if (onDay.length === 0) continue;
-    const done = onDay.filter((t) => t.done).length;
-    const list = onDay.map((t) => `${t.done ? "[x]" : "[ ]"} ${t.title}`).join("; ");
-    lines.push(`- ${dayLabel.format(d)}: ${done}/${onDay.length} done. ${list}`);
   }
 
   lines.push("", "Goals (current progress):");

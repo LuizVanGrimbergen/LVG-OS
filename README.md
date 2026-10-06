@@ -1,6 +1,6 @@
 # LVG OS
 
-A personal, mobile-first PWA to keep track of my planning, goals and personal growth. For my own use only.
+A personal, mobile-first PWA to keep track of my goals, habits, runs and personal growth. For my own use only.
 
 ## Stack
 
@@ -45,11 +45,11 @@ npm test
 
 ```
 src/
-  app/            routes: / (Home), /tasks, /notes, /goals, /runs, /insights, /coach, /settings
+  app/            routes: / (Home), /notes, /goals, /runs, /coach, /settings
   components/
     ui/           shadcn/ui components
     layout/       menu button, page header, bottom sheet
-  features/       modules: planning, goals, runs, notes, coach, settings, ...
+  features/       modules: home, goals, habits, runs, notes, coach, settings, ...
   hooks/          shared React hooks
   lib/            helpers, incl. supabase/client.ts, supabase/server.ts and the offline write queue
   types/          shared types

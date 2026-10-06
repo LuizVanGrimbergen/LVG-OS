@@ -1,4 +1,4 @@
-import { HomeView } from "@/features/planning/components/home-view";
+import { HomeView } from "@/features/home/components/home-view";
 
 export default function HomePage() {
   return <HomeView />;
