@@ -19,8 +19,12 @@ export function useGoals() {
         .select("id, title, category, kind, current, target")
         .order("created_at");
       if (cancelled) return;
-      if (error) console.error("Loading goals failed", error);
-      setGoals((data as Goal[] | null) ?? []);
+      if (error) {
+        // Offline or a server problem: keep showing what we had instead of an empty list.
+        console.error("Loading goals failed", error);
+      } else {
+        setGoals((data as Goal[] | null) ?? []);
+      }
       setLoaded(true);
     })();
     return () => {

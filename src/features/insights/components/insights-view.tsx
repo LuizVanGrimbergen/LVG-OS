@@ -40,7 +40,10 @@ function Insights({ today }: { today: string }) {
         .not("mood", "is", null)
         .order("day");
       if (cancelled) return;
-      if (error) console.error("Loading moods failed", error);
+      if (error) {
+        // Offline or a server problem: keep showing what we had.
+        return console.error("Loading moods failed", error);
+      }
       setMoods((data as MoodDay[] | null) ?? []);
     })();
     return () => {

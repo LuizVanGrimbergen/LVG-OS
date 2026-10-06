@@ -14,12 +14,15 @@ export function useSmokeFreeSince() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data, error } = await createClient()
-        .from("settings")
-        .select("smoke_free_since, cigarettes_per_day, pack_price, pack_size")
-        .maybeSingle();
+      // "*": the quit date still loads when the smoking-cost columns (connected.sql) aren't in the database.
+      const { data, error } = await createClient().from("settings").select("*").maybeSingle();
       if (cancelled) return;
-      if (error) console.error("Loading settings failed", error);
+      if (error) {
+        // Offline or a server problem: keep showing what we had instead of a blank card.
+        console.error("Loading settings failed", error);
+        setLoaded(true);
+        return;
+      }
       setSinceState(data?.smoke_free_since ?? null);
       if (data?.cigarettes_per_day && data.pack_price) {
         setCostState({

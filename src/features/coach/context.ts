@@ -33,7 +33,8 @@ export async function weekContext(supabase: Supabase, today = localToday()): Pro
     supabase.from("tasks").select("day, title, done, skipped").gte("day", from).lte("day", today).order("day"),
     supabase.from("goals").select("title, category, kind, current, target").order("created_at"),
     supabase.from("daily_notes").select("day, intention, reflection, mood").gte("day", from).lte("day", today).order("day"),
-    supabase.from("settings").select("smoke_free_since, cigarettes_per_day, pack_price, pack_size").maybeSingle(),
+    // "*": the quit date is still known when the smoking-cost columns (connected.sql) aren't in the database.
+    supabase.from("settings").select("*").maybeSingle(),
     supabase.from("habits").select("id, name").order("created_at"),
     supabase.from("habit_logs").select("habit_id, day").gte("day", habitsFrom),
     supabase

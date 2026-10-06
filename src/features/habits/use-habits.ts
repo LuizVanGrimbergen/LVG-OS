@@ -27,8 +27,13 @@ export function useHabits(today: string) {
         supabase.from("habit_logs").select("habit_id, day").gte("day", since),
       ]);
       if (cancelled) return;
-      if (habitsRes.error) console.error("Loading habits failed", habitsRes.error);
-      if (logsRes.error) console.error("Loading habit logs failed", logsRes.error);
+      if (habitsRes.error || logsRes.error) {
+        // Offline or a server problem: keep showing what we had instead of empty habits and streaks.
+        if (habitsRes.error) console.error("Loading habits failed", habitsRes.error);
+        if (logsRes.error) console.error("Loading habit logs failed", logsRes.error);
+        setLoaded(true);
+        return;
+      }
       const map = new Map<string, Set<string>>();
       for (const { habit_id, day } of logsRes.data ?? []) {
         if (!map.has(habit_id)) map.set(habit_id, new Set());

@@ -28,12 +28,16 @@ function when(createdAt: string, today: string | null): string {
 const TITLE_MAX = 200;
 const shorten = (text: string) => (text.length > TITLE_MAX ? `${text.slice(0, TITLE_MAX - 1)}…` : text);
 
-async function fetchNotes(): Promise<Note[]> {
+/** Your notes, newest first, or null when they couldn't be loaded (offline, server problem). */
+async function fetchNotes(): Promise<Note[] | null> {
   const { data, error } = await createClient()
     .from("notes")
     .select("id, body, created_at, archived_at")
     .order("created_at", { ascending: false });
-  if (error) console.error("Loading notes failed", error);
+  if (error) {
+    console.error("Loading notes failed", error);
+    return null;
+  }
   return data ?? [];
 }
 
@@ -58,7 +62,8 @@ export function NotesView({ shared, focus }: NotesViewProps) {
   const refresh = useCallback(async () => {
     // Saved: drop shared text from the address, so reloading doesn't fill it in again.
     if (window.location.search) window.history.replaceState(null, "", "/notes");
-    setNotes(await fetchNotes());
+    const fresh = await fetchNotes();
+    if (fresh) setNotes(fresh);
     setLoaded(true);
   }, [setNotes]);
 
@@ -67,7 +72,8 @@ export function NotesView({ shared, focus }: NotesViewProps) {
     (async () => {
       const data = await fetchNotes();
       if (cancelled) return;
-      setNotes(data);
+      // Couldn't load: keep showing what we had instead of an empty inbox.
+      if (data) setNotes(data);
       setLoaded(true);
     })();
     return () => {
