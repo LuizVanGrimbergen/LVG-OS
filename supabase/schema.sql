@@ -28,24 +28,6 @@ create table public.goals (
 );
 create index goals_user_idx on public.goals (user_id);
 
--- Places you've been to (country_id is the ISO 3166 numeric code)
-create table public.places (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
-  name text not null check (char_length(name) between 1 and 200),
-  country_id text not null check (country_id ~ '^[0-9]{3}$'),
-  created_at timestamptz not null default now()
-);
-create index places_user_idx on public.places (user_id);
-
--- Countries ticked off by hand
-create table public.visited_countries (
-  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
-  country_id text not null check (country_id ~ '^[0-9]{3}$'),
-  created_at timestamptz not null default now(),
-  primary key (user_id, country_id)
-);
-
 -- Morning intention and evening reflection, one row per day
 create table public.daily_notes (
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
@@ -66,7 +48,7 @@ do $$
 declare
   t text;
 begin
-  foreach t in array array['tasks', 'goals', 'places', 'visited_countries', 'daily_notes', 'settings'] loop
+  foreach t in array array['tasks', 'goals', 'daily_notes', 'settings'] loop
     execute format('alter table public.%I enable row level security', t);
 
     execute format(

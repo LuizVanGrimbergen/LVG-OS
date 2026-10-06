@@ -1,6 +1,6 @@
 # LVG OS
 
-A personal, mobile-first PWA to keep track of my planning, goals, travel and personal growth. For my own use only.
+A personal, mobile-first PWA to keep track of my planning, goals and personal growth. For my own use only.
 
 ## Stack
 
@@ -10,7 +10,6 @@ A personal, mobile-first PWA to keep track of my planning, goals, travel and per
 - [lucide-react](https://lucide.dev) for icons
 - [Supabase](https://supabase.com) (`@supabase/supabase-js` + `@supabase/ssr`)
 - [Serwist](https://serwist.pages.dev) for the service worker (PWA)
-- [d3-geo](https://d3js.org/d3-geo) + [world-atlas](https://github.com/topojson/world-atlas) for the travel map (rendered on the server)
 
 ## Running locally
 
@@ -46,11 +45,11 @@ npm test
 
 ```
 src/
-  app/            routes: / (Home), /tasks, /notes, /goals, /insights, /travel, /coach, /settings
+  app/            routes: / (Home), /tasks, /notes, /goals, /insights, /coach, /settings
   components/
     ui/           shadcn/ui components
     layout/       menu button, page header, bottom sheet
-  features/       modules: planning, goals, travel, notes, coach, settings, ...
+  features/       modules: planning, goals, notes, coach, settings, ...
   hooks/          shared React hooks
   lib/            helpers, incl. supabase/client.ts, supabase/server.ts and the offline write queue
   types/          shared types

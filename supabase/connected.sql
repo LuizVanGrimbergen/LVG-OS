@@ -1,4 +1,4 @@
--- LVG OS: tasks linked to goals, notes inbox, coach chat, mood, smoke-free money, place photos.
+-- LVG OS: tasks linked to goals, notes inbox, coach chat, mood, smoke-free money.
 -- Run once in the Supabase SQL Editor, after the other files.
 
 -- Tasks (and recurring rules) can count towards a goal.
@@ -60,22 +60,12 @@ create table public.coach_messages (
 );
 create index coach_messages_week_idx on public.coach_messages (user_id, week_start, created_at);
 
--- Photos of places; the files live in the private "place-photos" storage bucket under <user id>/.
-create table public.place_photos (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
-  place_id uuid not null references public.places (id) on delete cascade,
-  path text not null unique,
-  created_at timestamptz not null default now()
-);
-create index place_photos_place_idx on public.place_photos (place_id, created_at);
-
 -- Row level security: only your own rows.
 do $$
 declare
   t text;
 begin
-  foreach t in array array['coach_messages', 'place_photos'] loop
+  foreach t in array array['coach_messages'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format(
       'create policy "Own rows: select" on public.%I for select to authenticated using ((select auth.uid()) = user_id)', t);
@@ -90,14 +80,3 @@ begin
   end loop;
 end
 $$;
-
--- Storage: a private bucket; you can only touch files in your own folder.
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('place-photos', 'place-photos', false, 5242880, array['image/jpeg', 'image/png', 'image/webp']);
-
-create policy "Own place photos: select" on storage.objects for select to authenticated
-  using (bucket_id = 'place-photos' and (storage.foldername(name))[1] = (select auth.uid())::text);
-create policy "Own place photos: insert" on storage.objects for insert to authenticated
-  with check (bucket_id = 'place-photos' and (storage.foldername(name))[1] = (select auth.uid())::text);
-create policy "Own place photos: delete" on storage.objects for delete to authenticated
-  using (bucket_id = 'place-photos' and (storage.foldername(name))[1] = (select auth.uid())::text);

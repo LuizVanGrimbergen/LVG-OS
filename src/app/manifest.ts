@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "LVG OS",
     short_name: "LVG OS",
-    description: "Personal planning, goals, travel and growth.",
+    description: "Personal planning, goals and growth.",
     start_url: "/",
     display: "standalone",
     orientation: "portrait",

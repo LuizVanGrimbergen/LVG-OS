@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "LVG OS",
-  description: "Personal planning, goals, travel and growth.",
+  description: "Personal planning, goals and growth.",
   appleWebApp: {
     capable: true,
     title: "LVG OS",
