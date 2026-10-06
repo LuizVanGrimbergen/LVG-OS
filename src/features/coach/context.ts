@@ -4,6 +4,7 @@ import { TIME_ZONE } from "@/features/reminders/config";
 import { currentStreak } from "@/features/habits/streaks";
 import { euros, moneySaved } from "@/features/streaks/savings";
 import { MOOD_LABELS } from "@/features/reflection/mood";
+import { WEEKLY_RUNS, formatDuration, formatPace, km } from "@/features/runs/runs";
 import { addDays, daysBetween, fromDateKey, startOfWeek, toDateKey } from "@/lib/date";
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
@@ -29,7 +30,7 @@ export async function weekContext(supabase: Supabase, today = localToday()): Pro
   const from = toDateKey(addDays(fromDateKey(today), -6));
   const habitsFrom = toDateKey(addDays(fromDateKey(today), -HABIT_HISTORY_DAYS));
 
-  const [tasksRes, goalsRes, dailyRes, settingsRes, habitsRes, logsRes, notesRes] = await Promise.all([
+  const [tasksRes, goalsRes, dailyRes, settingsRes, habitsRes, logsRes, notesRes, runsRes] = await Promise.all([
     supabase.from("tasks").select("day, title, done, skipped").gte("day", from).lte("day", today).order("day"),
     supabase.from("goals").select("title, category, kind, current, target").order("created_at"),
     supabase.from("daily_notes").select("day, intention, reflection, mood").gte("day", from).lte("day", today).order("day"),
@@ -43,6 +44,7 @@ export async function weekContext(supabase: Supabase, today = localToday()): Pro
       .gte("created_at", `${from}T00:00:00Z`)
       .order("created_at")
       .limit(30),
+    supabase.from("runs").select("day, distance_km, duration_s").gte("day", from).lte("day", today).order("day"),
   ]);
 
   const lines: string[] = [`Period: ${dayLabel.format(fromDateKey(from))} – ${dayLabel.format(fromDateKey(today))}`];
@@ -89,6 +91,13 @@ export async function weekContext(supabase: Supabase, today = localToday()): Pro
     const days = new Set((logsRes.data ?? []).filter((l) => l.habit_id === h.id).map((l) => l.day));
     const thisWeek = [...days].filter((d) => d >= from && d <= today).length;
     lines.push(`- ${h.name}: ${thisWeek}/7 days, streak ${currentStreak(days, today)}`);
+  }
+
+  const runs = (runsRes.data ?? []).map((r) => ({ ...r, distance_km: Number(r.distance_km) }));
+  lines.push("", `Runs (aim: ${WEEKLY_RUNS} a week):`);
+  if (runs.length === 0) lines.push("- none");
+  for (const r of runs) {
+    lines.push(`- ${dayLabel.format(fromDateKey(r.day))}: ${km(r.distance_km)} in ${formatDuration(r.duration_s)} (${formatPace(r)})`);
   }
 
   lines.push("", "Morning intentions, evening check-ins and mood (1 rough … 5 great):");

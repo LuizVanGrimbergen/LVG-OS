@@ -9,6 +9,7 @@ import { SmokeFreeCard } from "@/features/streaks/components/smoke-free-card";
 import { useTodayKey } from "@/hooks/use-today";
 import { endOfWeek, fromDateKey, startOfWeek, toDateKey } from "@/lib/date";
 import { HabitsCard } from "@/features/habits/components/habits-card";
+import { RunsCard } from "@/features/runs/components/runs-card";
 import { useTasks } from "../tasks-context";
 import { CarryOverCard } from "./carry-over-card";
 import { TasksCard } from "./tasks-card";
@@ -52,6 +53,11 @@ export function HomeView() {
         {todayKey && (
           <StaggerItem>
             <HabitsCard today={todayKey} />
+          </StaggerItem>
+        )}
+        {todayKey && (
+          <StaggerItem>
+            <RunsCard today={todayKey} />
           </StaggerItem>
         )}
         <StaggerItem>

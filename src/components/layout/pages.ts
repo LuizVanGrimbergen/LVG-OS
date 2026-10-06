@@ -1,4 +1,4 @@
-import { ChartNoAxesColumn, House, ListChecks, NotebookPen, Settings, Sparkles, Target, type LucideIcon } from "lucide-react";
+import { ChartNoAxesColumn, Footprints, House, ListChecks, NotebookPen, Settings, Sparkles, Target, type LucideIcon } from "lucide-react";
 
 export type AppPage = { href: string; label: string; icon: LucideIcon };
 
@@ -7,6 +7,7 @@ export const pages: AppPage[] = [
   { href: "/tasks", label: "Tasks", icon: ListChecks },
   { href: "/notes", label: "Notes", icon: NotebookPen },
   { href: "/goals", label: "Goals", icon: Target },
+  { href: "/runs", label: "Runs", icon: Footprints },
   { href: "/insights", label: "Insights", icon: ChartNoAxesColumn },
   { href: "/coach", label: "Coach", icon: Sparkles },
   { href: "/settings", label: "Settings", icon: Settings },
