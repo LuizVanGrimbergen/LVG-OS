@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
-import { QuickCapture } from "@/features/notes/components/quick-capture";
 import { DailyQuote } from "@/features/quotes/components/daily-quote";
 import { ReflectionCard } from "@/features/reflection/components/reflection-card";
 import { SmokeFreeCard } from "@/features/streaks/components/smoke-free-card";
@@ -55,8 +54,7 @@ export function HomeView() {
             <HabitsCard today={todayKey} />
           </StaggerItem>
         )}
-        <StaggerItem className="space-y-2">
-          <QuickCapture />
+        <StaggerItem>
           <ReflectionCard />
         </StaggerItem>
       </div>
