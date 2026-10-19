@@ -36,7 +36,7 @@ revoke all on public.bucket_list from anon;
 insert into public.goals (user_id, title, category, kind, target, created_at)
 select (select id from auth.users order by created_at limit 1), title, category, kind, target,
   now() + n * interval '1 millisecond'
-from (values
+from (select *, row_number() over () as n from (values
   ('Land a permanent developer job in Sydney within 1 month', 'career', 'count', 1),
   ('Make 20 new LinkedIn connections in the Sydney tech scene', 'career', 'count', 20),
   ('Go to 2 meetups a month', 'career', 'percent', 100),
@@ -61,12 +61,12 @@ from (values
   ('Write down 3 things I''m grateful for every evening', 'growth', 'percent', 100),
   ('Track my budget and save for the bucket list', 'growth', 'percent', 100),
   ('Listen to an English podcast every week', 'growth', 'percent', 100)
-) with ordinality as g (title, category, kind, target, n);
+) as v (title, category, kind, target)) as g;
 
 insert into public.bucket_list (user_id, title, section, created_at)
 select (select id from auth.users order by created_at limit 1), title, section,
   now() + n * interval '1 millisecond'
-from (values
+from (select *, row_number() over () as n from (values
   ('Stunt flying!', 'sydney'),
   ('Beat my godfather at karting and get a top 50 lap record', 'sydney'),
   ('Bondi to Coogee coastal walk', 'sydney'),
@@ -88,4 +88,4 @@ from (values
   ('Skydive over the beach at Wollongong', 'australia'),
   ('Sail the Whitsundays', 'australia'),
   ('A real Aussie BBQ on the beach', 'australia')
-) with ordinality as b (title, section, n);
+) as v (title, section)) as b;
