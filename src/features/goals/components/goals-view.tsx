@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Briefcase, Dumbbell } from "lucide-react";
+import { Briefcase, Dumbbell, Flame, HeartPulse, Rocket, Sprout } from "lucide-react";
 import { AddButton } from "@/components/layout/add-button";
 import { DeleteSheet } from "@/components/layout/delete-sheet";
 import { AnimatedList, AnimatedListItem } from "@/components/motion/animated-list";
@@ -13,7 +13,14 @@ import { useGoals } from "../use-goals";
 import { AddGoalSheet } from "./add-goal-sheet";
 import { GoalRow } from "./goal-row";
 
-const categoryIcons = { sport: Dumbbell, work: Briefcase };
+const categoryIcons = {
+  sport: Dumbbell,
+  work: Briefcase,
+  career: Rocket,
+  comfort: Flame,
+  health: HeartPulse,
+  growth: Sprout,
+};
 
 export function GoalsView() {
   const { goals, loaded, step, remove, add } = useGoals();

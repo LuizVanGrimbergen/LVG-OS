@@ -47,7 +47,7 @@ export function AddGoalSheet({ open, initialTitle = "", onClose, onAdd }: AddGoa
         className="h-12 w-full rounded-xl border border-input bg-transparent px-4 text-base outline-none focus:border-ring"
       />
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {categories.map((c) => (
           <button
             key={c.id}

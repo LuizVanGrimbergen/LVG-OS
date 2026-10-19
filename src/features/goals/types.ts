@@ -1,4 +1,4 @@
-export type GoalCategory = "sport" | "work";
+export type GoalCategory = "sport" | "work" | "career" | "comfort" | "health" | "growth";
 
 export type Goal = {
   id: string;
