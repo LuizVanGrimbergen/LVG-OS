@@ -53,12 +53,12 @@ export function useHabits(today: string) {
   /** Days in a row, counting from today if done, otherwise from yesterday. */
   const streak = (habitId: string) => currentStreak(logs.get(habitId) ?? new Set(), today);
 
-  const setLogged = (habitId: string, on: boolean) =>
+  const setLogged = (habitId: string, on: boolean, day = today) =>
     setLogs((prev) => {
       const next = new Map(prev);
       const days = new Set(next.get(habitId));
-      if (on) days.add(today);
-      else days.delete(today);
+      if (on) days.add(day);
+      else days.delete(day);
       next.set(habitId, days);
       return next;
     });
@@ -78,6 +78,21 @@ export function useHabits(today: string) {
     }
     // `logs` here is still from before the tap, so today isn't counted yet.
     return on ? streak(habitId) + 1 : null;
+  };
+
+  /** Log or unlog any day. Returns false if saving failed. */
+  const setDay = async (habitId: string, day: string, on: boolean): Promise<boolean> => {
+    setLogged(habitId, on, day);
+    const table = createClient().from("habit_logs");
+    const { error } = on
+      ? await table.insert({ habit_id: habitId, day })
+      : await table.delete().eq("habit_id", habitId).eq("day", day);
+    if (error) {
+      console.error("Updating habit failed", error);
+      setLogged(habitId, !on, day);
+      return false;
+    }
+    return true;
   };
 
   const add = async (name: string, icon: string) => {
@@ -100,5 +115,5 @@ export function useHabits(today: string) {
     }
   };
 
-  return { habits, logs, loaded, doneToday, streak, toggleToday, add, remove };
+  return { habits, logs, loaded, doneToday, streak, toggleToday, setDay, add, remove };
 }
