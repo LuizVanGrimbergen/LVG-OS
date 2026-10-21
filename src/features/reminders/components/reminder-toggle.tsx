@@ -26,7 +26,7 @@ async function currentSubscription() {
   return registration?.pushManager.getSubscription() ?? null;
 }
 
-/** Morning and evening reminders as phone notifications. */
+/** Morning reminder as phone notifications. */
 export function ReminderToggle() {
   const [status, setStatus] = useState<Status>("loading");
   const [busy, setBusy] = useState(false);
@@ -102,7 +102,7 @@ export function ReminderToggle() {
           <BellRing className="size-5 text-muted-foreground" />
           <div>
             <p className="text-[15px]">Reminders</p>
-            <p className="text-xs text-muted-foreground">Morning intention and evening check-in</p>
+            <p className="text-xs text-muted-foreground">Morning intention</p>
           </div>
         </div>
         {canToggle && (

@@ -12,16 +12,15 @@ function localDay(): string {
 
 function slotFor(request: NextRequest): ReminderSlot | null {
   const param = request.nextUrl.searchParams.get("slot");
-  if (param === "morning" || param === "evening") return param;
+  if (param === "morning") return param;
   const schedule = request.headers.get("x-vercel-cron-schedule");
   if (schedule === SCHEDULES.morning) return "morning";
-  if (schedule === SCHEDULES.evening) return "evening";
   return null;
 }
 
 /**
- * Called by Vercel Cron twice a day. Sends a reminder to every subscribed device,
- * unless that part of today's note is already filled in (so duplicate runs are harmless).
+ * Called by Vercel Cron every morning. Sends a reminder to every subscribed device,
+ * unless today's intention is already filled in (so duplicate runs are harmless).
  */
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -53,7 +52,7 @@ export async function GET(request: NextRequest) {
 
   for (const sub of subsRes.data ?? []) {
     const note = notes.get(sub.user_id);
-    if ((slot === "morning" && note?.intention) || (slot === "evening" && note?.reflection)) {
+    if (note?.intention) {
       skipped++;
       continue;
     }
